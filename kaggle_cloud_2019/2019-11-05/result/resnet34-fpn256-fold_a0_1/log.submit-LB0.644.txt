@@ -1,0 +1,38 @@
+
+
+--- [START 2019-11-06_01-28-27] ----------------------------------------------------------------
+
+	@common.py:  
+	set random seed
+		SEED = 1572974908
+	set cuda environment
+		torch.__version__              = 1.2.0
+		torch.version.cuda             = 9.2.148
+		torch.backends.cudnn.version() = 7602
+		os['CUDA_VISIBLE_DEVICES']     = 0
+		torch.cuda.device_count()      = 1
+
+
+
+	SEED         = 1572974908
+	PROJECT_PATH = /root/share/project/kaggle/2019/cloud/code/on_cloud_one_00
+	__file__     = /root/share/project/kaggle/2019/cloud/code/on_cloud_one_00/resnet34-fpn-0/submit.py
+	out_dir      = /root/share/project/kaggle/2019/cloud/result/run1/resnet34-fpn256-fold_a0_1
+
+** dataset setting **
+test_dataset : 
+	len = 3698
+
+	mode    = test
+	split   = ['test_3698.npy']
+	csv     = ['sample_submission.csv']
+	num_image = 3698
+
+
+submitting .... @ ['null', 'flip_lr']
+threshold_label = [0.85, 0.85, 0.85, 0.85]
+threshold_mask_pixel = [0.4, 0.4, 0.4, 0.4]
+threshold_mask_size  = [1, 1, 1, 1]
+
+test submission .... @ ['null', 'flip_lr']
+ 

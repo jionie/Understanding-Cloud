@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="8f0fe333-bd6b-472b-b2e4-7e733a0d7552" name="Default Changelist" comment="" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <splitter split-orientation="horizontal" split-proportion="0.7313345">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/__old__/run_make_df.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="180">
+                  <caret line="10" selection-start-line="10" selection-end-line="10" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/submit.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="78">
+                  <caret line="163" lean-forward="true" selection-start-line="163" selection-end-line="163" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/note">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="397">
+                  <caret line="30" column="301" selection-start-line="30" selection-start-column="301" selection-end-line="30" selection-end-column="301" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/__old__/run_make_split.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-71">
+                  <caret line="19" column="19" selection-start-line="19" selection-start-column="19" selection-end-line="19" selection-end-column="19" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/__old__/run_check_image_size.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="288">
+                  <caret line="16" column="25" lean-forward="true" selection-start-line="16" selection-start-column="25" selection-end-line="16" selection-end-column="25" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/pandas/core/indexes/base.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="233">
+                  <caret line="2663" column="21" lean-forward="true" selection-start-line="2663" selection-start-column="21" selection-end-line="2663" selection-end-column="21" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/resnet.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-1242" />
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="1423">
+                  <caret line="1740" selection-start-line="1740" selection-end-line="1740" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/kaggle.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="88">
+                  <caret line="17" column="33" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
+                  <folding>
+                    <element signature="e#0#21#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/model.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="162">
+                  <caret line="333" lean-forward="true" selection-start-line="333" selection-end-line="333" />
+                  <folding>
+                    <element signature="e#0#21#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/train_a0.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="1818">
+                  <caret line="146" column="8" selection-start-line="146" selection-start-column="8" selection-end-line="146" selection-end-column="8" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/dataset.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="88">
+                  <caret line="21" column="45" selection-start-line="21" selection-start-column="32" selection-end-line="21" selection-end-column="45" />
+                  <folding>
+                    <element signature="e#0#20#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>a5e151ad8</find>
+      <find>9056783d7</find>
+      <find>0.66</find>
+      <find>mix</find>
+      <find>00053000_model.pth</find>
+      <find>162959249</find>
+      <find>mixup</find>
+      <find>probability_mask_to_probability_label</find>
+      <find>null_collate</find>
+      <find>efc0006fa</find>
+      <find>de7556be9</find>
+      <find>1e8f59c7e</find>
+      <find>e97867d51</find>
+      <find>8973e4e91</find>
+      <find>relu</find>
+      <find>nn.BatchNorm2d</find>
+      <find>ba8ebb757</find>
+      <find>logit</find>
+      <find>separable_conv</find>
+      <find>conv_before_pooling</find>
+      <find>512652b4f</find>
+      <find>82632</find>
+      <find>compute_metric_mask</find>
+      <find>ensemble</find>
+      <find>rank</find>
+      <find>draw_mask_overlay</find>
+      <find>criterion_mask</find>
+      <find>sigmoid</find>
+      <find>do_flip_ud</find>
+      <find>input_to_image</find>
+    </findStrings>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/lib/include.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/train_b0_probe.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe_train1.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/train_b1_probe.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe_test1.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe1.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/demo2a.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/demo2.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe3a.py" />
+        <option value="$PROJECT_DIR$/defect1.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/train_b0_hardmine.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/train_mixmatch_b0.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/train_mixup_b0.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/train_psuedo_b0.py" />
+        <option value="$PROJECT_DIR$/__old__/pretrain/scarletc/ref.py" />
+        <option value="$PROJECT_DIR$/__old__/pretrain/scarletc/scarletnet.py" />
+        <option value="$PROJECT_DIR$/scarletnet_256x400-0/scarletnet.py" />
+        <option value="$PROJECT_DIR$/scarletnet_256x400-0/model.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe_all.py" />
+        <option value="$PROJECT_DIR$/etc.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_submit.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/run_probe3b.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-0/model.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_large_margin_1/run_probe3b.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-1/model.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-1/experiment_loss.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss1.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-1/train_b0.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-1/train_b0_sig.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_topk_softmax/model.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_topk_softmax/train_b0.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_large_margin_1/model.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss2.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400-1/run_probe3b.py" />
+        <option value="$PROJECT_DIR$/__old__/lsoftmax/run_xxx.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss5.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_probe3b.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_submit.py" />
+        <option value="$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_probe_all.py" />
+        <option value="$PROJECT_DIR$/defect.py" />
+        <option value="$PROJECT_DIR$/__old__/run_make_df.py" />
+        <option value="$PROJECT_DIR$/__old__/run_check_image_size.py" />
+        <option value="$PROJECT_DIR$/note" />
+        <option value="$PROJECT_DIR$/resnet34-fpn-0/model.py" />
+        <option value="$PROJECT_DIR$/resnet34-fpn-0/train_a0.py" />
+        <option value="$PROJECT_DIR$/__old__/run_make_split.py" />
+        <option value="$PROJECT_DIR$/dataset.py" />
+        <option value="$PROJECT_DIR$/kaggle.py" />
+        <option value="$PROJECT_DIR$/resnet34-fpn-0/submit.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-186" />
+    <option name="y" value="1052" />
+    <option name="width" value="1858" />
+    <option name="height" value="843" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="on_cloud_one_00" type="b2602c69:ProjectViewProjectNode" />
+              <item name="on_cloud_one_00" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="on_cloud_one_00" type="b2602c69:ProjectViewProjectNode" />
+              <item name="on_cloud_one_00" type="462c0819:PsiDirectoryNode" />
+              <item name="__old__" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="on_cloud_one_00" type="b2602c69:ProjectViewProjectNode" />
+              <item name="on_cloud_one_00" type="462c0819:PsiDirectoryNode" />
+              <item name="resnet34-fpn-0" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="dummy_13" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="dummy_13" />
+      </console-settings>
+    </option>
+    <option name="myShowDebugConsoleByDefault" value="true" />
+    <option name="myIpythonEnabled" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/__old__" />
+      <recent name="$PROJECT_DIR$/efficientb5_256x400_large_margin_1" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/efficientb5_256x400-1" />
+      <recent name="$PROJECT_DIR$/efficientb5_256x400-0" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/efficientb5_256x400_large_margin_1" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.submit">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python" singleton="false">
+      <module name="dummy_13" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/opt/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="dataset" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
+      <module name="dummy_13" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/opt/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/dataset.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="kaggle" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
+      <module name="dummy_13" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/opt/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/kaggle.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run_make_split" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
+      <module name="dummy_13" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/opt/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/__old__" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/__old__/run_make_split.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="submit" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
+      <module name="dummy_13" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/opt/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/resnet34-fpn-0" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/resnet34-fpn-0/submit.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_a0" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true">
+      <module name="dummy_13" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/opt/anaconda3/bin/python3.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/resnet34-fpn-0" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/resnet34-fpn-0/train_a0.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.run_make_split" />
+      <item itemvalue="Python.dataset" />
+      <item itemvalue="Python.train_a0" />
+      <item itemvalue="Python.kaggle" />
+      <item itemvalue="Python.submit" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.submit" />
+        <item itemvalue="Python.dataset" />
+        <item itemvalue="Python.run_make_split" />
+        <item itemvalue="Python.kaggle" />
+        <item itemvalue="Python.train_a0" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8f0fe333-bd6b-472b-b2e4-7e733a0d7552" name="Default Changelist" comment="" />
+      <created>1568893702109</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1568893702109</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="Unittests_for_run_xxx_LSoftmaxTestCase_test_even - 2019.10.06 at 23h 10m 58s.xml">
+      <configuration name="Unittests for run_xxx.LSoftmaxTestCase.test_even" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_run_xxx_LSoftmaxTestCase_test_even - 2019.10.06 at 23h 11m 58s.xml">
+      <configuration name="Unittests for run_xxx.LSoftmaxTestCase.test_even" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_run_xxx_LSoftmaxTestCase_test_even - 2019.10.06 at 23h 12m 22s.xml">
+      <configuration name="Unittests for run_xxx.LSoftmaxTestCase.test_even" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_in_run_xxx_py - 2019.10.06 at 23h 12m 42s.xml">
+      <configuration name="Unittests in run_xxx.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_run_xxx_LSoftmaxTestCase_test_odd - 2019.10.06 at 23h 13m 04s.xml">
+      <configuration name="Unittests for run_xxx.LSoftmaxTestCase.test_odd" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_run_xxx_LSoftmaxTestCase_test_even - 2019.10.06 at 23h 13m 28s.xml">
+      <configuration name="Unittests for run_xxx.LSoftmaxTestCase.test_even" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Unittests_for_run_xxx_LSoftmaxTestCase_test_even - 2019.10.06 at 23h 13m 50s.xml">
+      <configuration name="Unittests for run_xxx.LSoftmaxTestCase.test_even" configurationId="tests" />
+    </history-entry>
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-186" y="1052" width="1858" height="843" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.077929154" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.6302211" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.5557103" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4045881" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Version Control" order="6" />
+      <window_info anchor="bottom" id="TODO" order="7" weight="0.3295099" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.6736184" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.2877998" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/run_probe_train1.py</url>
+          <line>211</line>
+          <option name="timeStamp" value="265" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/train_mixmatch_b0.py</url>
+          <line>72</line>
+          <option name="timeStamp" value="270" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/train_mixmatch_b0.py</url>
+          <line>574</line>
+          <option name="timeStamp" value="271" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/train_mixmatch_b0.py</url>
+          <line>573</line>
+          <option name="timeStamp" value="272" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scarletnet_256x400-0/model.py</url>
+          <line>137</line>
+          <option name="timeStamp" value="273" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/defect.py</url>
+          <line>223</line>
+          <option name="timeStamp" value="274" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/run_submit.py</url>
+          <line>265</line>
+          <option name="timeStamp" value="286" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/run_submit.py</url>
+          <line>264</line>
+          <option name="timeStamp" value="287" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/model.py</url>
+          <line>289</line>
+          <option name="timeStamp" value="288" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/model.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="290" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400-0/model.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="291" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss0.py</url>
+          <line>71</line>
+          <option name="timeStamp" value="292" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss0.py</url>
+          <line>32</line>
+          <option name="timeStamp" value="305" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/__old__/run_make_split.py</url>
+          <line>42</line>
+          <option name="timeStamp" value="306" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/__old__/run_make_df.py</url>
+          <line>12</line>
+          <option name="timeStamp" value="307" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/__old__/run_make_df.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="312" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kaggle.py</url>
+          <line>252</line>
+          <option name="timeStamp" value="313" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kaggle.py</url>
+          <line>347</line>
+          <option name="timeStamp" value="317" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kaggle.py</url>
+          <line>291</line>
+          <option name="timeStamp" value="318" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kaggle.py</url>
+          <line>275</line>
+          <option name="timeStamp" value="319" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kaggle.py</url>
+          <line>96</line>
+          <option name="timeStamp" value="326" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/__old__/run_check_image_size.py</url>
+          <line>11</line>
+          <option name="timeStamp" value="328" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/resnet34-fpn-0/train_a0.py</url>
+          <line>65</line>
+          <option name="timeStamp" value="337" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/dataset.py</url>
+          <line>117</line>
+          <option name="timeStamp" value="339" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/resnet34-fpn-0/submit.py</url>
+          <line>197</line>
+          <option name="timeStamp" value="341" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/resnet34-fpn-0/submit.py</url>
+          <line>207</line>
+          <option name="timeStamp" value="342" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/train_mixmatch_b0.py" />
+    <entry file="file://$PROJECT_DIR$/scarletnet_256x400-0/model.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/train_psuedo1_b0.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/run_submit1.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/run_probe_all.py" />
+    <entry file="file://$PROJECT_DIR$/etc.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/model.py" />
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/torch/__init__.pyi">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="138">
+          <caret line="738" column="45" selection-start-line="738" selection-start-column="38" selection-end-line="738" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/run_probe3b.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss1.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-1/train_b0_sig.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/train_b0_sig.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss0.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/efficientnet.py" />
+    <entry file="file://$PROJECT_DIR$/scarletnet_256x400-0/scarletnet.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/train_b0.py" />
+    <entry file="file:///opt/anaconda3/lib/python3.7/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="196">
+          <caret line="309" selection-start-line="309" selection-end-line="309" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/model.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-1/train_b0.py" />
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/torch/nn/modules/module.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="188">
+          <caret line="546" selection-start-line="546" selection-end-line="546" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/torch/tensor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="117" selection-start-line="117" selection-end-line="117" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/torch/autograd/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="92" selection-start-line="92" selection-end-line="92" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss2.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-1/run_probe3b.py" />
+    <entry file="file://$PROJECT_DIR$/__old__/lsoftmax/run_xxx.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss5.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/model.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_large_margin_1/experiment_loss.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_probe3b.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_submit1.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_submit.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400_topk_softmax/run_probe_all.py" />
+    <entry file="file://$PROJECT_DIR$/defect.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-1/model.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/run_submit.py" />
+    <entry file="file://$PROJECT_DIR$/efficientb5_256x400-0/run_probe3b.py" />
+    <entry file="file://$PROJECT_DIR$/common.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/pandas/core/frame.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="2926" selection-start-line="2926" selection-end-line="2926" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1423">
+          <caret line="1740" selection-start-line="1740" selection-end-line="1740" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/torch/nn/functional.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-83">
+          <caret line="2675" column="4" selection-start-line="2675" selection-start-column="4" selection-end-line="2675" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__old__/run_check_image_size.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="16" column="25" lean-forward="true" selection-start-line="16" selection-start-column="25" selection-end-line="16" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/anaconda3/lib/python3.7/site-packages/pandas/core/indexes/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="233">
+          <caret line="2663" column="21" lean-forward="true" selection-start-line="2663" selection-start-column="21" selection-end-line="2663" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/note">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="397">
+          <caret line="30" column="301" selection-start-line="30" selection-start-column="301" selection-end-line="30" selection-end-column="301" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/resnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1242" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="333" lean-forward="true" selection-start-line="333" selection-end-line="333" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/train_a0.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1818">
+          <caret line="146" column="8" selection-start-line="146" selection-start-column="8" selection-end-line="146" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__old__/run_make_df.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__old__/run_make_split.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-71">
+          <caret line="19" column="19" selection-start-line="19" selection-start-column="19" selection-end-line="19" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="21" column="45" selection-start-line="21" selection-start-column="32" selection-end-line="21" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/kaggle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="17" column="33" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resnet34-fpn-0/submit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="78">
+          <caret line="163" lean-forward="true" selection-start-line="163" selection-end-line="163" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
