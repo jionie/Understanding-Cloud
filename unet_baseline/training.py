@@ -3,6 +3,7 @@ from functools import partial
 import glob
 from multiprocessing import Pool
 import argparse
+import logger
 
 # Disable multiprocesing for numpy/opencv. We already multiprocess ourselves, this would mean every subprocess produces
 # even more threads which would lead to a lot of context switching, slowing things down a lot.
@@ -40,22 +41,24 @@ from torch.nn.parallel.data_parallel import data_parallel
 
 from models.model import *
 import torchvision.models as models
-
-from utils.transform import *
-
-from torch.utils.tensorboard import SummaryWriter
 from apex import amp
-from ranger import *
-import learning_schedules_fastai as lsf
-from fastai_optim import OptimWrapper
 
 import albumentations
 from albumentations import torch as AT
 
+from utils.transform import *
+from utils.dataset import *
+from torch.utils.tensorboard import SummaryWriter
+from utils.ranger import *
+import utils.learning_schedules_fastai as lsf
+from utils.fastai_optim import OptimWrapper
+from utils.lrs_scheduler import * 
+
+
 parser = argparse.ArgumentParser(description="arg parser")
 parser.add_argument('--model', type=str, default='efficientnet-b5', required=False, help='specify the backbone model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
-parser.add_argument("--lr_scheduler", type=str, default='adamonecycle', required=False, help="specify the lr scheduler")
+parser.add_argument("--lr_scheduler", type=str, default='WarmRestart', required=False, help="specify the lr scheduler")
 parser.add_argument("--batch_size", type=int, default=16, required=False, help="specify the batch size for training")
 parser.add_argument("--valid_batch_size", type=int, default=64, required=False, help="specify the batch size for validating")
 parser.add_argument("--num_epoch", type=int, default=50, required=False, help="specify the total epoch")
@@ -84,7 +87,7 @@ seed_everything(SEED)
 SIZE = 336
 
 
-def transform_train(image, mask):
+def transform_train(image, label, mask, infor):
     # if random.random() < 0.5:
     #     image = albumentations.RandomRotate90(p=1)(image=image)['image']
     #     mask = albumentations.RandomRotate90(p=1)(image=mask)['image']
@@ -93,9 +96,9 @@ def transform_train(image, mask):
     #     image = albumentations.Transpose(p=1)(image=image)['image']
     #     mask = albumentations.Transpose(p=1)(image=mask)['image']
 
-    # if random.random() < 0.5:
-    #     image = albumentations.VerticalFlip(p=1)(image=image)['image']
-    #     mask = albumentations.VerticalFlip(p=1)(image=mask)['image']
+    if random.random() < 0.5:
+        image = albumentations.VerticalFlip(p=1)(image=image)['image']
+        mask = albumentations.VerticalFlip(p=1)(image=mask)['image']
 
     if random.random() < 0.5:
         image = albumentations.HorizontalFlip(p=1)(image=image)['image']
@@ -105,18 +108,18 @@ def transform_train(image, mask):
     #     image = albumentations.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.15, rotate_limit=45, p=1)(image=image)['image']
     #     mask = albumentations.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.15, rotate_limit=45, p=1)(image=mask)['image']
 
-    # if random.random() < 0.5:
-    #     image = albumentations.RandomBrightness(0.1)(image=image)['image']
-    #     image = albumentations.RandomContrast(0.1)(image=image)['image']
-    #     image = albumentations.Blur(blur_limit=3)(image=image)['image']
+    if random.random() < 0.5:
+        image = albumentations.RandomBrightness(0.1)(image=image)['image']
+        image = albumentations.RandomContrast(0.1)(image=image)['image']
+        image = albumentations.Blur(blur_limit=3)(image=image)['image']
 
     if random.random() < 0.5:
-        image = albumentations.Cutout(num_holes=1, max_h_size=32, max_w_size=32, p=1)(image=image)['image']
-        mask = albumentations.Cutout(num_holes=1, max_h_size=32, max_w_size=32, p=1)(image=mask)['image']
+        image = albumentations.Cutout(num_holes=1, max_h_size=16, max_w_size=16, p=1)(image=image)['image']
+        mask = albumentations.Cutout(num_holes=1, max_h_size=16, max_w_size=16, p=1)(image=mask)['image']
 
-    return image, mask
+    return image, label, mask, infor
 
-def transform_valid(image, mask):
+def transform_valid(image, label, mask, infor):
     # if random.random() < 0.5:
     #     image = albumentations.RandomRotate90(p=1)(image=image)['image']
     #     mask = albumentations.RandomRotate90(p=1)(image=mask)['image']
@@ -129,11 +132,11 @@ def transform_valid(image, mask):
     #     image = albumentations.VerticalFlip(p=1)(image=image)['image']
     #     mask = albumentations.VerticalFlip(p=1)(image=mask)['image']
 
-    if random.random() < 0.5:
-        image = albumentations.HorizontalFlip(p=1)(image=image)['image']
-        mask = albumentations.HorizontalFlip(p=1)(image=mask)['image']
+    # if random.random() < 0.5:
+    #     image = albumentations.HorizontalFlip(p=1)(image=image)['image']
+    #     mask = albumentations.HorizontalFlip(p=1)(image=mask)['image']
 
-    return image, mask
+    return image, label, mask, infor
 
 def transform_test(image):
     
@@ -147,86 +150,6 @@ def transform_test(image):
 
     return image_simple, image_hard
 
-
-
-############################################################################## define bev dataset
-class CloudDataset(Dataset):
-    def __init__(self, split, csv, mode, augment=None):
-
-        self.split   = split
-        self.csv     = csv
-        self.mode    = mode
-        self.augment = augment
-
-        self.uid = list(np.concatenate([np.load(DATA_DIR + '/split/%s'%f , allow_pickle=True) for f in split]))
-        df = pd.concat([pd.read_csv(DATA_DIR + '/%s'%f).fillna('') for f in csv])
-        df = df_loc_by_list(df, 'Image_Label', [ u[0] + '_%s'%CLASSNO_TO_CLASSNAME[c]  for u in self.uid for c in [0,1,2,3] ])
-
-
-        df[['image_id','class_name']]= df['Image_Label'].str.split('_', expand = True)
-        df['class_no']=df['class_name'].map(CLASSNAME_TO_CLASSNO)
-        df['encoded_pixel']=df['EncodedPixels']
-        df['label'] = (df['EncodedPixels']!='').astype(np.int32)
-
-        df = df[['image_id','class_no','class_name','label','encoded_pixel']]
-        df_label = pd.pivot_table(df, values = 'label', index=['image_id'], columns = 'class_name').reset_index()
-
-        self.df = df
-        self.df_label = df_label
-        self.num_image = len(self.uid)
-
-
-    def __str__(self):
-        string  = ''
-        string += '\tlen = %d\n'%len(self)
-        string += '\n'
-        string += '\tmode    = %s\n'%self.mode
-        string += '\tsplit   = %s\n'%self.split
-        string += '\tcsv     = %s\n'%str(self.csv)
-        string += '\tnum_image = %d\n'%self.num_image
-        if self.mode == 'train':
-            label = self.df_label[list(CLASSNAME_TO_CLASSNO.keys())].values
-
-            num_image = len(label)
-            num_pos = label.sum(0)
-            num_neg = num_image - num_pos
-            for c in range(NUM_CLASS):
-                pos = num_pos[c]
-                neg = num_neg[c]
-                num = num_image
-                string += '\t%16s   neg%d, pos%d = %5d  (%0.3f),  %5d  (%0.3f)\n'%(CLASSNO_TO_CLASSNAME[c], c,c,neg,neg/num,pos,pos/num)
-
-        return string
-
-
-    def __len__(self):
-        return self.num_image
-
-
-    def __getitem__(self, index):
-        # print(index)
-        image_id, folder = self.uid[index]
-        #image = cv2.imread(DATA_DIR + '/image/%s/%s'%(folder,image_id), cv2.IMREAD_COLOR)
-        image = cv2.imread(DATA_DIR + '/image/%s0.50/%s.png'%(folder,image_id[:-4]), cv2.IMREAD_COLOR)
-
-        if self.mode == 'train':
-            mask = cv2.imread(DATA_DIR + '/mask/%s0.25/%s.png'%(folder,image_id[:-4]), cv2.IMREAD_UNCHANGED)
-        else:
-            mask = np.zeros((525,350,4), np.uint8)
-
-        image = image.astype(np.float32)/255
-        mask  = mask.astype(np.float32)/255
-        label = self.df_label.loc[self.df_label['image_id']==image_id][list(CLASSNAME_TO_CLASSNO.keys())].values[0]
-
-        infor = Struct(
-            index    = index,
-            image_id = image_id,
-        )
-
-        if self.augment is None:
-            return image, label, mask, infor
-        else:
-            return self.augment(image, label, mask, infor)
 
 def children(m: nn.Module):
     return list(m.children())
@@ -246,24 +169,57 @@ def unet_training(model_name,
                   checkpoint_folder,
                   load_pretrain
                   ):
-    ############################################################################## train test splitting 0.8 / 0.2
-    input_filepaths = sorted(glob.glob(os.path.join(train_data_folder, "*_input.png")))
-    target_filepaths = sorted(glob.glob(os.path.join(train_data_folder, "*_target.png")))
-    map_filepaths = sorted(glob.glob(os.path.join(train_data_folder, "*_map.png")))
     
-    idx = [i for i in range(len(input_filepaths))]
-    random.seed(SEED)
-    random.shuffle(idx)
-    train_idx = idx[:int(0.8 * len(idx))]
-    valid_idx = idx[int(0.8 * len(idx)):]
+    
+    log = Logger()
+    log.open(out_dir+'/log.train.txt',mode='a')
+    log.write('\n--- [START %s] %s\n\n' % (IDENTIFIER, '-' * 64))
+    log.write('\t%s\n' % COMMON_STRING)
+    log.write('\n')
 
-    train_input_filepaths = [input_filepaths[i] for i in train_idx]
-    train_target_filepaths = [target_filepaths[i] for i in train_idx]
-    train_map_filepaths = [map_filepaths[i] for i in train_idx]
+    log.write('\tSEED         = %u\n' % SEED)
+    log.write('\tPROJECT_PATH = %s\n' % PROJECT_PATH)
+    log.write('\t__file__     = %s\n' % __file__)
+    log.write('\tout_dir      = %s\n' % out_dir)
+    log.write('\n')
+
     
-    valid_input_filepaths = [input_filepaths[i] for i in valid_idx]
-    valid_target_filepaths = [target_filepaths[i] for i in valid_idx]
-    valid_map_filepaths = [map_filepaths[i] for i in valid_idx]
+    ## dataset ----------------------------------------
+    log.write('** dataset setting **\n')
+
+    train_dataset = CloudDataset(
+        mode    = 'train',
+        csv     = ['train.csv',],
+        split   = ['by_random1/train_fold_a0_5246.npy',],
+        augment = train_augment,
+    )
+    train_loader  = DataLoader(
+        train_dataset,
+        sampler     = RandomSampler(train_dataset),
+        batch_size  = batch_size,
+        drop_last   = True,
+        num_workers = 4,
+        pin_memory  = True,
+        collate_fn  = null_collate
+    )
+
+
+    valid_dataset = CloudDataset(
+        mode    = 'train',
+        csv     = ['train.csv',],
+        split   = ['by_random1/valid_fold_a0_300.npy',],
+        #split   = ['by_random1/valid_small_fold_a0_120.npy',],
+        augment = None,
+    )
+    valid_loader = DataLoader(
+        valid_dataset,
+        sampler     = SequentialSampler(valid_dataset),
+        batch_size  = 4,
+        drop_last   = False,
+        num_workers = 4,
+        pin_memory  = True,
+        collate_fn  = null_collate
+    )
 
     train_dataset = BEVImageDataset(input_filepaths=train_input_filepaths, target_filepaths=train_target_filepaths, \
         type="train", img_size=SIZE, map_filepaths=train_map_filepaths)
@@ -323,6 +279,9 @@ def unet_training(model_name,
         lr_scheduler_each_iter = True
     elif lr_scheduler_name == "CosineAnealing":
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, num_epoch, eta_min=0, last_epoch=-1)
+        lr_scheduler_each_iter = False
+    elif lr_scheduler_name == "WarmRestart":
+        scheduler = WarmRestart(optimizer, T_max=5, T_mult=1, eta_min=1e-6)
         lr_scheduler_each_iter = False
     else:
         raise NotImplementedError
