@@ -2,19 +2,17 @@ from .kaggle import *
 from PIL import Image
 from matplotlib import pyplot as plt
 
-
-DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization'
-
 class CloudDataset(Dataset):
-    def __init__(self, split, csv, mode, augment=None):
+    def __init__(self, data_dir='/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization', split=None, csv=None, mode=None, augment=None):
 
+        self.data_dir = data_dir
         self.split   = split
         self.csv     = csv
         self.mode    = mode
         self.augment = augment
 
-        self.uid = list(np.concatenate([np.load(DATA_DIR + '/split/%s'%f , allow_pickle=True) for f in split]))
-        df = pd.concat([pd.read_csv(DATA_DIR + '/%s'%f).fillna('') for f in csv])
+        self.uid = list(np.concatenate([np.load(self.data_dir + '/split/%s'%f , allow_pickle=True) for f in split]))
+        df = pd.concat([pd.read_csv(self.data_dir + '/%s'%f).fillna('') for f in csv])
         df = df_loc_by_list(df, 'Image_Label', [ u[0] + '_%s'%CLASSNO_TO_CLASSNAME[c]  for u in self.uid for c in [0,1,2,3] ])
 
 
@@ -61,14 +59,17 @@ class CloudDataset(Dataset):
     def __getitem__(self, index):
         # print(index)
         image_id, folder = self.uid[index]
-        #image = cv2.imread(DATA_DIR + '/image/%s/%s'%(folder,image_id), cv2.IMREAD_COLOR)
-        image = cv2.imread(DATA_DIR + '/image/%s0.50/%s.png'%(folder,image_id[:-4]), cv2.IMREAD_COLOR)
+        #image = cv2.imread(self.data_dir + '/image/%s/%s'%(folder,image_id), cv2.IMREAD_COLOR)
+        image = cv2.imread(self.data_dir + '/image/%s0.50/%s.png'%(folder,image_id[:-4]), cv2.IMREAD_COLOR)
 
         if self.mode == 'train':
-            mask = cv2.imread(DATA_DIR + '/mask/%s0.25/%s.png'%(folder,image_id[:-4]), cv2.IMREAD_UNCHANGED)
+            mask = cv2.imread(self.data_dir + '/mask/%s0.25/%s.png'%(folder,image_id[:-4]), cv2.IMREAD_UNCHANGED)
         else:
-            mask = np.zeros((525,350,4), np.uint8)
+            mask = np.zeros((525, 350, 4), np.uint8)
 
+        image = cv2.resize(image, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
+        mask = cv2.resize(mask, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
+        
         image = image.astype(np.float32)/255
         mask  = mask.astype(np.float32)/255
         label = self.df_label.loc[self.df_label['image_id']==image_id][list(CLASSNAME_TO_CLASSNO.keys())].values[0]

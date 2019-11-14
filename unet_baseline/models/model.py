@@ -1,11 +1,11 @@
 from .unet import *
 
 class model_iMet(nn.Module):
-    def __init__(self, model_name, IN_CHANNEL, NUM_CLASSES, SIZE):
+    def __init__(self, model_name, IN_CHANNEL, NUM_CLASSES, WIDTH, HEIGT):
         super(model_iMet, self).__init__()
 
         self.model_name = model_name
-        self.model = Unet(model_name, IN_CHANNEL, NUM_CLASSES, SIZE)
+        self.model = Unet(model_name, IN_CHANNEL, NUM_CLASSES, WIDTH, HEIGT)
 
 
     def forward(self, x):

@@ -24,12 +24,12 @@ class lager_kernel_block(nn.Module):
 
 
 class Unet(nn.Module):
-    def __init__(self, model_name, IN_CHANNEL, NUM_CLASSES, SIZE):
+    def __init__(self, model_name, IN_CHANNEL, NUM_CLASSES, WIDTH, HEIGT):
         super(Unet, self).__init__()
         self.model_name = model_name
         self.down = True
         if model_name == 'seresnext50':
-            self.basemodel = se_resnext50_32x4d()
+            self.basemodel = se_resnext50_32x4d(pretrained='imagenet')
             self.planes = [256 // 4, 512 // 4, 1024 // 4, 2048 // 4]
             inplanes = 64
             layer0_modules = [
@@ -64,7 +64,7 @@ class Unet(nn.Module):
             self.down3 = nn.Conv2d(1024, self.planes[2], kernel_size=1)
             self.down4 = nn.Conv2d(2048, self.planes[3], kernel_size=1)
         if model_name == 'seresnext101':
-            self.basemodel = se_resnext101_32x4d()
+            self.basemodel = se_resnext101_32x4d(pretrained='imagenet')
             self.planes = [256 // 4, 512 // 4, 1024 // 4, 2048 // 4]
             inplanes = 64
             layer0_modules = [
@@ -179,7 +179,7 @@ class Unet(nn.Module):
             nn.ReLU(),
             nn.BatchNorm2d(self.planes[0] // 2),
 
-            nn.UpsamplingBilinear2d(size=(SIZE, SIZE)),
+            nn.UpsamplingBilinear2d(size=(HEIGT, WIDTH)),
 
             nn.Conv2d(self.planes[0] // 2, NUM_CLASSES, kernel_size=1)
         )
