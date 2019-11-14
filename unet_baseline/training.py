@@ -457,7 +457,7 @@ def unet_training(model_name,
                     )
                     test_neg_ratio = 1-test_pos_ratio
 
-                    tn, tp, dn, dp = valid_loss[2:].reshape(-1, NUM_CLASS)
+                    tn, tp, dn, dp = valid_loss[1:].reshape(-1, NUM_CLASS)
                     kaggle = test_neg_ratio*tn + test_neg_ratio*(1-tn)*dn + test_pos_ratio*tp*dp
                     kaggle = kaggle.mean()
 
