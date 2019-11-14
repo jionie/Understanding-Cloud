@@ -57,27 +57,29 @@ from utils.lrs_scheduler import *
 from utils.other_loss import *
 from utils.lovasz_loss import *
 from utils.loss_function import *
+from utils.metric import *
 
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model', type=str, default='seresnext101', required=False, help='specify the backbone model')
+parser.add_argument('--model', type=str, default='efficientnet-b5', required=False, help='specify the backbone model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
 parser.add_argument("--lr_scheduler", type=str, default='WarmRestart', required=False, help="specify the lr scheduler")
-parser.add_argument("--lr", type=int, default=2e-3, required=False, help="specify the initial learning rate for training")
+parser.add_argument("--lr", type=int, default=5e-4, required=False, help="specify the initial learning rate for training")
 parser.add_argument("--batch_size", type=int, default=8, required=False, help="specify the batch size for training")
 parser.add_argument("--valid_batch_size", type=int, default=32, required=False, help="specify the batch size for validating")
-parser.add_argument("--num_epoch", type=int, default=50, required=False, help="specify the total epoch")
+parser.add_argument("--num_epoch", type=int, default=100, required=False, help="specify the total epoch")
 parser.add_argument("--accumulation_steps", type=int, default=4, required=False, help="specify the accumulation steps")
-parser.add_argument("--start_epoch", type=int, default=1, required=False, help="specify the start epoch for continue training")
+parser.add_argument("--start_epoch", type=int, default=0, required=False, help="specify the start epoch for continue training")
 parser.add_argument("--train_data_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization", \
     required=False, help="specify the folder for training data")
-parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization/model/unet", \
+parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/model/unet", \
     required=False, help="specify the folder for checkpoint")
 parser.add_argument('--load_pretrain', action='store_true', default=False, help='whether to load pretrain model')
 
 
 ############################################################################## define constant
+SEED = 42
 NUM_TRAIN = 5546
 NUM_TEST  = 3698
 
@@ -102,12 +104,13 @@ CLASSNAME_TO_CLASSNO = {
 'Sugar'  : 3,
 }
 
+CLASSNO_TO_CLASSNAME = {v: k for k, v in CLASSNAME_TO_CLASSNO.items()}
+
 NUM_CLASS = len(CLASSNAME_TO_CLASSNO)
 
 DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization'
 
 ############################################################################## seed all
-SEED = 42
 def seed_everything(seed=SEED):
     random.seed(seed)
     os.environ['PYHTONHASHSEED'] = str(seed)
@@ -131,9 +134,19 @@ def transform_train(image, label, mask, infor):
         mask = albumentations.HorizontalFlip(p=1)(image=mask)['image']
 
     if random.random() < 0.5:
-        image = albumentations.RandomBrightness(0.1)(image=image)['image']
-        image = albumentations.RandomContrast(0.1)(image=image)['image']
-        image = albumentations.Blur(blur_limit=3)(image=image)['image']
+        
+        image = albumentations.OneOf([
+            albumentations.RandomGamma(gamma_limit=(60, 120), p=0.9),
+            albumentations.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.9),
+            albumentations.CLAHE(clip_limit=4.0, tile_grid_size=(4, 4), p=0.9),
+        ])(image=image)['image']
+        
+        image = albumentations.OneOf([
+            albumentations.Blur(blur_limit=4, p=1),
+            albumentations.MotionBlur(blur_limit=4, p=1),
+            albumentations.MedianBlur(blur_limit=4, p=1)
+        ], p=0.5)(image=image)['image']
+        # image = albumentations.Blur(blur_limit=3)(image=image)['image']
 
     if random.random() < 0.5:
         image = albumentations.Cutout(num_holes=1, max_h_size=16, max_w_size=16, p=1)(image=image)['image']
@@ -151,7 +164,13 @@ def transform_train(image, label, mask, infor):
     #     image = albumentations.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.15, rotate_limit=45, p=1)(image=image)['image']
     #     mask = albumentations.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.15, rotate_limit=45, p=1)(image=mask)['image']
     
-    # image = albumentations.Normalize()(image=image)['image']
+    image = albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0)(image=image)['image']
+
+    return image, label, mask, infor
+
+def transform_valid(image, label, mask, infor):
+    
+    image = albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0)(image=image)['image']
 
     return image, label, mask, infor
 
@@ -169,7 +188,9 @@ def transform_test(image):
     if random.random() < 0.5:
         image = albumentations.HorizontalFlip(p=1)(image=image)['image']
         mask = albumentations.HorizontalFlip(p=1)(image=mask)['image']
-        
+     
+     
+    image = albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0)(image=image)['image']   
     # image = albumentations.Normalize(image=image)['image']
 
     return image_simple, image_hard
@@ -219,7 +240,7 @@ def unet_training(model_name,
     
     
     log = Logger()
-    log.open(checkpoint_folder+'/log.train.txt',mode='a+')
+    log.open(checkpoint_folder+'/' + model_name + '_log_train.txt',mode='a+')
     log.write('\t%s\n' % COMMON_STRING)
     log.write('\n')
 
@@ -256,7 +277,7 @@ def unet_training(model_name,
         csv     = ['train.csv',],
         split   = ['by_random1/valid_fold_a0_300.npy',],
         #split   = ['by_random1/valid_small_fold_a0_120.npy',],
-        augment = None,
+        augment = transform_valid,
     )
     valid_dataloader = DataLoader(
         valid_dataset,
@@ -347,9 +368,17 @@ def unet_training(model_name,
     
     for epoch in range(1, num_epoch+1):
         
-        # update lr and start from start_epoch
+        # update lr and start from start_epoch  
         if (not lr_scheduler_each_iter):
-            scheduler.step(epoch)
+            if epoch < 15:
+                if epoch != 0:
+                    scheduler.step()
+                    scheduler = warm_restart(scheduler, T_mult=2) 
+                elif epoch > 14 and epoch < 17:
+                    optimizer.param_groups[0]['lr'] = 1e-5
+                else:
+                    optimizer.param_groups[0]['lr'] = 5e-6
+            
         if (epoch < start_epoch):
             continue
         
@@ -409,8 +438,8 @@ def unet_training(model_name,
                 train_loss = sum_train_loss / (sum_train + 1e-12)
                 sum_train_loss[...] = 0
                 sum_train[...]      = 0
-                log.write('train loss: %f dn: %f dp1: %f dp2: %f dp3: %f dp4: %f\n' % \
-                    (train_loss[0], train_loss[1], train_loss[2], train_loss[3], train_loss[4], train_loss[5]))
+                log.write('lr: %f train loss: %f dn: %f dp1: %f dp2: %f dp3: %f dp4: %f\n' % \
+                    (rate, train_loss[0], train_loss[1], train_loss[2], train_loss[3], train_loss[4], train_loss[5]))
             
 
             if (tr_batch_i+1) % eval_step == 0:  

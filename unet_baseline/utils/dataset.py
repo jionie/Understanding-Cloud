@@ -70,7 +70,7 @@ class CloudDataset(Dataset):
         image = cv2.resize(image, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
         mask = cv2.resize(mask, dsize=(525, 350), interpolation=cv2.INTER_LINEAR)
         
-        image = image.astype(np.float32)/255
+        # image = image.astype(np.float32)/255
         mask  = mask.astype(np.float32)/255
         label = self.df_label.loc[self.df_label['image_id']==image_id][list(CLASSNAME_TO_CLASSNO.keys())].values[0]
 
