@@ -58,7 +58,8 @@ from utils.other_loss import *
 from utils.lovasz_loss import *
 from utils.loss_function import *
 
-DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization'
+
+############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
 parser.add_argument('--model', type=str, default='seresnext101', required=False, help='specify the backbone model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
@@ -74,6 +75,36 @@ parser.add_argument("--train_data_folder", type=str, default="/media/jionie/my_d
 parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization/model/unet", \
     required=False, help="specify the folder for checkpoint")
 parser.add_argument('--load_pretrain', action='store_true', default=False, help='whether to load pretrain model')
+
+
+############################################################################## define constant
+NUM_TRAIN = 5546
+NUM_TEST  = 3698
+
+NUM_TEST_POS={ #estimae only !!!! based on public data only !!!
+'Fish'   : (1864, 0.5040562466197945),
+'Flower' : (1508, 0.4077879935100054),
+'Gravel' : (1982, 0.5359653866955111),
+'Sugar'  : (2382, 0.6441319632233640), #**
+}# total pos:7736  neg:7056
+
+NUM_TRAIN_POS={
+'Fish'   : (2765, 0.499),
+'Flower' : (3181, 0.574),
+'Gravel' : (2607, 0.470),
+'Sugar'  : (1795, 0.324),
+}
+
+CLASSNAME_TO_CLASSNO = {
+'Fish'   : 0,
+'Flower' : 1,
+'Gravel' : 2,
+'Sugar'  : 3,
+}
+
+NUM_CLASS = len(CLASSNAME_TO_CLASSNO)
+
+DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization'
 
 ############################################################################## seed all
 SEED = 42
@@ -259,13 +290,6 @@ def unet_training(model_name,
 
 
     ############################################################################### model and optimizer
-    CLASSNAME_TO_CLASSNO = {
-    'Fish'   : 0,
-    'Flower' : 1,
-    'Gravel' : 2,
-    'Sugar'  : 3,
-    }
-   
     model = get_unet_model(model_name=model_name, IN_CHANNEL=3, NUM_CLASSES=len(CLASSNAME_TO_CLASSNO), WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT)
     if (load_pretrain):
         model.load_pretrain(checkpoint_filepath)
@@ -355,7 +379,7 @@ def unet_training(model_name,
             prediction = model(X)  # [N, C, H, W]
             
             loss = SoftDiceLoss_binary()(prediction, truth_mask) + \
-                   np.sqrt(MASK_WIDTH * MASK_HEIGHT) * criterion_mask(prediction, truth_mask, weight=None)
+                   criterion_mask(prediction, truth_mask, weight=None)
 
             with amp.scale_loss(loss/accumulation_steps, optimizer) as scaled_loss:
                 scaled_loss.backward()
@@ -367,7 +391,7 @@ def unet_training(model_name,
                 optimizer.step()
                 optimizer.zero_grad()
 
-                writer.add_scalar('train_loss', loss.item()*accumulation_steps, epoch*len(train_dataloader)*batch_size+tr_batch_i*batch_size)
+                writer.add_scalar('train_loss', loss.item(), (epoch-1)*len(train_dataloader)*batch_size+tr_batch_i*batch_size)
             
             # print statistics  --------
             probability_mask  = torch.sigmoid(prediction)
@@ -409,14 +433,14 @@ def unet_training(model_name,
                         prediction = model(X)  # [N, C, H, W]
 
                         loss = SoftDiceLoss_binary()(prediction, truth_mask) + \
-                            np.sqrt(MASK_WIDTH * MASK_HEIGHT) * criterion_mask(prediction, truth_mask, weight=None)
+                            criterion_mask(prediction, truth_mask, weight=None)
                             
-                        writer.add_scalar('val_loss', loss.item(), epoch*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
+                        writer.add_scalar('val_loss', loss.item(), (epoch-1)*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
                         
                         # print statistics  --------
                         probability_mask  = torch.sigmoid(prediction)
                         probability_label = probability_mask_to_label(probability_mask)
-                        tn,tp, _, _ = metric_label(probability_label, truth_label)
+                        tn, tp, _, _ = metric_label(probability_label, truth_label)
                         dn, dp, num_neg, num_pos = metric_mask(probability_mask, truth_mask)
 
                         #---
@@ -426,8 +450,22 @@ def unet_training(model_name,
                         valid_num  += n
                         
                     valid_loss = valid_loss / valid_num
-                    log.write('validation loss: %f tn1: %f tn2: %f tn3: %f tn4: %f tp1: %f tp2: %f tp3: %f tp4: %f dn1: %f dn2: %f dn3: %f dn4: %f dp1: %f dp2: %f dp3: %f dp4: %f\n' % \
-                    (valid_loss[0], \
+                    
+                    #------
+                    test_pos_ratio = np.array(
+                        [NUM_TEST_POS[c][0] / NUM_TEST for c in list(CLASSNAME_TO_CLASSNO.keys())]
+                    )
+                    test_neg_ratio = 1-test_pos_ratio
+
+                    tn, tp, dn, dp = valid_loss[2:].reshape(-1, NUM_CLASS)
+                    kaggle = test_neg_ratio*tn + test_neg_ratio*(1-tn)*dn + test_pos_ratio*tp*dp
+                    kaggle = kaggle.mean()
+
+                    kaggle1 = test_neg_ratio*tn + test_pos_ratio*tp
+                    kaggle1 = kaggle1.mean()
+                    
+                    log.write('kaggle value: %f validation loss: %f tn1: %f tn2: %f tn3: %f tn4: %f tp1: %f tp2: %f tp3: %f tp4: %f dn1: %f dn2: %f dn3: %f dn4: %f dp1: %f dp2: %f dp3: %f dp4: %f\n' % \
+                    (kaggle1, valid_loss[0], \
                     valid_loss[1], valid_loss[2], valid_loss[3], valid_loss[4], \
                     valid_loss[5], valid_loss[6], valid_loss[7], valid_loss[8], \
                     valid_loss[9], valid_loss[10], valid_loss[11], valid_loss[12], \
