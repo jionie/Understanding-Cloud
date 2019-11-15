@@ -62,18 +62,19 @@ from utils.metric import *
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model', type=str, default='efficientnet-b5', required=False, help='specify the backbone model')
+parser.add_argument('--model', type=str, default='seresnext50', required=False, help='specify the backbone model')
+parser.add_argument('--model_type', type=str, default='aspp', required=False, help='specify the model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
 parser.add_argument("--lr_scheduler", type=str, default='WarmRestart', required=False, help="specify the lr scheduler")
 parser.add_argument("--lr", type=int, default=5e-4, required=False, help="specify the initial learning rate for training")
-parser.add_argument("--batch_size", type=int, default=8, required=False, help="specify the batch size for training")
-parser.add_argument("--valid_batch_size", type=int, default=32, required=False, help="specify the batch size for validating")
+parser.add_argument("--batch_size", type=int, default=4, required=False, help="specify the batch size for training")
+parser.add_argument("--valid_batch_size", type=int, default=4, required=False, help="specify the batch size for validating")
 parser.add_argument("--num_epoch", type=int, default=100, required=False, help="specify the total epoch")
 parser.add_argument("--accumulation_steps", type=int, default=4, required=False, help="specify the accumulation steps")
 parser.add_argument("--start_epoch", type=int, default=0, required=False, help="specify the start epoch for continue training")
 parser.add_argument("--train_data_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization", \
     required=False, help="specify the folder for training data")
-parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/model/unet", \
+parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/model", \
     required=False, help="specify the folder for checkpoint")
 parser.add_argument('--load_pretrain', action='store_true', default=False, help='whether to load pretrain model')
 
@@ -203,6 +204,7 @@ def num_children(m: nn.Module):
     return len(children(m))
 
 def unet_training(model_name,
+                  model_type,
                   optimizer_name,
                   lr_scheduler_name,
                   lr,
@@ -238,9 +240,11 @@ def unet_training(model_name,
     COMMON_STRING += '\t\ttorch.cuda.device_count()      = %d\n'%torch.cuda.device_count()
     COMMON_STRING += '\n'
     
+    if not os.path.exists(checkpoint_folder + '/' + model_type + '/' + model_name):
+        os.mkdir(checkpoint_folder + '/' + model_type + '/' + model_name)
     
     log = Logger()
-    log.open(checkpoint_folder+'/' + model_name + '_log_train.txt',mode='a+')
+    log.open(checkpoint_folder + '/' + model_type + '/' + model_name + '/' + model_name + '_log_train.txt', mode='a+')
     log.write('\t%s\n' % COMMON_STRING)
     log.write('\n')
 
@@ -306,7 +310,7 @@ def unet_training(model_name,
 
 
     ############################################################################### training parameters
-    checkpoint_filename = model_name + "_unet_checkpoint.pth"
+    checkpoint_filename = model_type + '/' + model_name + '/' + model_name + "_" + model_type + "_unet_checkpoint.pth"
     checkpoint_filepath = os.path.join(checkpoint_folder, checkpoint_filename)
 
 
@@ -515,6 +519,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    unet_training(args.model, args.optimizer, args.lr_scheduler, args.lr, args.batch_size, args.valid_batch_size, \
+    unet_training(args.model, args.model_type, args.optimizer, args.lr_scheduler, args.lr, args.batch_size, args.valid_batch_size, \
                     args.num_epoch, args.start_epoch, args.accumulation_steps, args.train_data_folder, \
                     args.checkpoint_folder, args.load_pretrain)

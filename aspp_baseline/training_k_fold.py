@@ -58,10 +58,10 @@ from utils.lovasz_loss import *
 from utils.loss_function import *
 from utils.metric import *
 from utils.split_data import *
+from utils.ml_stratifiers import MultilabelStratifiedKFold
 
 from model import *
 
-from ml_stratifiers import MultilabelStratifiedKFold
 
 
 ############################################################################## define augument

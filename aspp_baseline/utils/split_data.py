@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ml_stratifiers import MultilabelStratifiedKFold
+from .ml_stratifiers import MultilabelStratifiedKFold
 
 
 PATH = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization'
