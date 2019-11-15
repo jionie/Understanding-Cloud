@@ -321,7 +321,7 @@ def run_train():
             probability_mask  = torch.sigmoid(logit_mask)
             probability_label = probability_mask_to_label(probability_mask)
             #tn,tp, num_neg,num_pos = metric_label(probability_label, truth_label)
-            dn,dp, num_neg,num_pos = metric_mask(probability_mask, truth_mask)
+            dn, dp, num_neg, num_pos = metric_mask(probability_mask, truth_mask)
 
             l = np.array([ loss.item()*batch_size,dn.sum(),*dp ])
             n = np.array([ batch_size, num_neg.sum(),*num_pos ])

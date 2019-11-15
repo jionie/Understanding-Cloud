@@ -2,7 +2,7 @@
 
 import numpy as np
 from functools import partial
-from fastai_optim import OptimWrapper
+from .fastai_optim import OptimWrapper
 
 
 class LRSchedulerStep(object):
