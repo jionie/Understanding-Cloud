@@ -363,8 +363,9 @@ def unet_training(model_name,
     valid_loss = np.zeros(17,np.float32)
     train_loss = np.zeros( 6,np.float32)
     valid_metric_optimal = np.inf
-    eval_step = 500 # or len(train_dataloader) 
+    eval_step = len(train_dataloader) # or len(train_dataloader) 
     log_step = 100
+    eval_count = 0
     
     # define tensorboard writer and timer
     writer = SummaryWriter()
@@ -446,7 +447,9 @@ def unet_training(model_name,
                     (rate, train_loss[0], train_loss[1], train_loss[2], train_loss[3], train_loss[4], train_loss[5]))
             
 
-            if (tr_batch_i+1) % eval_step == 0:  
+            if (tr_batch_i+1) % eval_step == 0: 
+                
+                eval_count += 1 
                 
                 valid_loss = np.zeros(17, np.float32)
                 valid_num  = np.zeros_like(valid_loss)
@@ -468,7 +471,7 @@ def unet_training(model_name,
                         loss = SoftDiceLoss_binary()(prediction, truth_mask) + \
                             criterion_mask(prediction, truth_mask, weight=None)
                             
-                        writer.add_scalar('val_loss', loss.item(), (epoch-1)*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
+                        writer.add_scalar('val_loss', loss.item(), (eval_count-1)*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
                         
                         # print statistics  --------
                         probability_mask  = torch.sigmoid(prediction)

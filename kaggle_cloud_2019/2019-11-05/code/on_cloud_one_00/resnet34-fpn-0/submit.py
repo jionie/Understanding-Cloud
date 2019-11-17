@@ -277,13 +277,6 @@ def run_submit_segmentation(
         text = summarise_metric_mask(kaggle, result)
         log.write('\n%s'%(text))
 
-
-
-
-
-
-
-
     ###################
 
     if mode =='test':
