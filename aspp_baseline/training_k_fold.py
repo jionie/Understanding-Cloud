@@ -66,14 +66,14 @@ from model import *
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model', type=str, default='seresnext50', required=False, help='specify the backbone model')
+parser.add_argument('--model', type=str, default='efficientnet-b3', required=False, help='specify the backbone model')
 parser.add_argument('--model_type', type=str, default='aspp', required=False, help='specify the model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
 parser.add_argument("--lr_scheduler", type=str, default='WarmRestart', required=False, help="specify the lr scheduler")
 parser.add_argument("--lr", type=int, default=5e-4, required=False, help="specify the initial learning rate for training")
 parser.add_argument("--batch_size", type=int, default=4, required=False, help="specify the batch size for training")
 parser.add_argument("--valid_batch_size", type=int, default=4, required=False, help="specify the batch size for validating")
-parser.add_argument("--num_epoch", type=int, default=100, required=False, help="specify the total epoch")
+parser.add_argument("--num_epoch", type=int, default=12, required=False, help="specify the total epoch")
 parser.add_argument("--accumulation_steps", type=int, default=4, required=False, help="specify the accumulation steps")
 parser.add_argument("--start_epoch", type=int, default=0, required=False, help="specify the start epoch for continue training")
 parser.add_argument("--train_data_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization", \
@@ -84,7 +84,7 @@ parser.add_argument('--load_pretrain', action='store_true', default=False, help=
 
 
 ############################################################################## define constant
-SEED = 42
+SEED = 323
 N_SPLITS = 5
 NUM_TRAIN = 5546
 NUM_TEST  = 3698
@@ -351,7 +351,7 @@ def unet_training(model_name,
     valid_loss = np.zeros(17,np.float32)
     train_loss = np.zeros( 6,np.float32)
     valid_metric_optimal = np.inf
-    eval_step = 500 # or len(train_dataloader) 
+    eval_step = len(train_dataloader) # or len(train_dataloader) 
     log_step = 100
     eval_count = 0
     
@@ -363,11 +363,11 @@ def unet_training(model_name,
         
         # update lr and start from start_epoch  
         if (not lr_scheduler_each_iter):
-            if epoch < 15:
+            if epoch < 6:
                 if epoch != 0:
                     scheduler.step()
                     scheduler = warm_restart(scheduler, T_mult=2) 
-                elif epoch > 14 and epoch < 17:
+                elif epoch > 5 and epoch < 7:
                     optimizer.param_groups[0]['lr'] = 1e-5
                 else:
                     optimizer.param_groups[0]['lr'] = 5e-6
@@ -457,7 +457,7 @@ def unet_training(model_name,
                         #SoftDiceLoss_binary()(prediction, truth_mask)
                         loss = criterion_mask(prediction, truth_mask, weight=None)
                             
-                        writer.add_scalar('val_loss_' + str(fold), loss.item(), (eval_count-1)*eval_step*valid_batch_size+val_batch_i*valid_batch_size)
+                        writer.add_scalar('val_loss_' + str(fold), loss.item(), (eval_count-1)*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
                         
                         # print statistics  --------
                         probability_mask  = torch.sigmoid(prediction)
