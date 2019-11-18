@@ -46,27 +46,26 @@ from apex import amp
 import albumentations
 from albumentations import torch as AT
 
-from utils.transform import *
-from utils.dataset import *
 from torch.utils.tensorboard import SummaryWriter
-from utils.ranger import *
-import utils.learning_schedules_fastai as lsf
-from utils.fastai_optim import OptimWrapper
-from utils.lrs_scheduler import * 
-from utils.other_loss import *
-from utils.lovasz_loss import *
-from utils.loss_function import *
-from utils.metric import *
-from utils.split_data import *
-from utils.ml_stratifiers import MultilabelStratifiedKFold
 
-from models.model import *
+from tuils.dataset import *
+from tuils.ranger import *
+import tuils.learning_schedules_fastai as lsf
+from tuils.fastai_optim import OptimWrapper
+from tuils.lrs_scheduler import * 
+from tuils.other_loss import *
+from tuils.lovasz_loss import *
+from tuils.loss_function import *
+from tuils.metric import *
+from tuils.split_data import *
+from tuils.ml_stratifiers import MultilabelStratifiedKFold
+
 
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model', type=str, default='seresnext101', required=False, help='specify the backbone model')
-parser.add_argument('--model_type', type=str, default='unet', required=False, help='specify the model')
+parser.add_argument('--model', type=str, default='deep_se101', required=False, help='specify the backbone model')
+parser.add_argument('--model_type', type=str, default='deeplab', required=False, help='specify the model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
 parser.add_argument("--lr_scheduler", type=str, default='WarmRestart', required=False, help="specify the lr scheduler")
 parser.add_argument("--lr", type=int, default=2e-3, required=False, help="specify the initial learning rate for training")
@@ -83,7 +82,7 @@ parser.add_argument('--load_pretrain', action='store_true', default=False, help=
 
 
 ############################################################################## define constant
-SEED = 2019
+SEED = 2020
 N_SPLITS = 5
 NUM_TRAIN = 5546
 NUM_TEST  = 3698
@@ -181,15 +180,27 @@ def transform_valid(image, label, mask, infor):
 
     return image, label, mask, infor
 
-
-
 def children(m: nn.Module):
     return list(m.children())
 
 def num_children(m: nn.Module):
     return len(children(m))
 
-def unet_training(model_name,
+def load(model, pretrain_file, skip=[]):
+    pretrain_state_dict = torch.load(pretrain_file)
+    state_dict = model.state_dict()
+    keys = list(state_dict.keys())
+    for key in keys:
+        if any(s in key for s in skip): continue
+        try:
+            state_dict[key] = pretrain_state_dict[key]
+        except:
+            print(key)
+    model.load_state_dict(state_dict)
+    
+    return model
+
+def deeplab_training(model_name,
                   model_type,
                   optimizer_name,
                   lr_scheduler_name,
@@ -288,11 +299,25 @@ def unet_training(model_name,
     MASK_WIDTH = 525
     MASK_HEIGHT = 350
     
-    def get_unet_model(model_name="efficientnet-b3", IN_CHANNEL=3, NUM_CLASSES=2, WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT):
-        model = model_iMet(model_name, IN_CHANNEL, NUM_CLASSES, WIDTH, HEIGHT)
-        
-        # Optional, for multi GPU training and inference
-        # model = nn.DataParallel(model)
+    def get_model(model_name="deep_se101", in_channel=6, num_classes=1, criterion=SoftDiceLoss_binary()):
+        if model_name == 'deep_se50':
+            from semantic_segmentation.network.deepv3 import DeepSRNX50V3PlusD_m1  # r
+            model = DeepSRNX50V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'deep_se101':
+            from semantic_segmentation.network.deepv3 import DeepSRNX101V3PlusD_m1  # r
+            model = DeepSRNX101V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'WideResnet38':
+            from semantic_segmentation.network.deepv3 import DeepWR38V3PlusD_m1  # r
+            model = DeepWR38V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'unet_ef3':
+            from ef_unet import EfficientNet_3_unet
+            model = EfficientNet_3_unet()
+        elif model_name == 'unet_ef5':
+            from ef_unet import EfficientNet_5_unet
+            model = EfficientNet_5_unet()
+        else:
+            print('No model name in it')
+            model = None
         return model
     
     
@@ -304,9 +329,9 @@ def unet_training(model_name,
 
 
     ############################################################################### model and optimizer
-    model = get_unet_model(model_name=model_name, IN_CHANNEL=3, NUM_CLASSES=len(CLASSNAME_TO_CLASSNO), WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT)
+    model = get_model(model_name=model_name, in_channel=3, num_classes=len(CLASSNAME_TO_CLASSNO), criterion=SoftDiceLoss_binary())
     if (load_pretrain):
-        model.load_pretrain(checkpoint_filepath)
+        model = load(model, checkpoint_filepath)
     model = model.cuda()
     
     if optimizer_name == "Adam":
@@ -516,6 +541,6 @@ if __name__ == "__main__":
         train_split = ['train_fold_%s_seed_%s.npy'%(fold_, SEED)]
         val_split = ['val_fold_%s_seed_%s.npy'%(fold_, SEED)]
     
-        unet_training(args.model, args.model_type, args.optimizer, args.lr_scheduler, args.lr, args.batch_size, args.valid_batch_size, \
+        deeplab_training(args.model, args.model_type, args.optimizer, args.lr_scheduler, args.lr, args.batch_size, args.valid_batch_size, \
                         args.num_epoch, args.start_epoch, args.accumulation_steps, args.train_data_folder, \
                         args.checkpoint_folder, train_split, val_split, fold_, args.load_pretrain)

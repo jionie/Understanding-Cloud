@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ml_stratifiers import MultilabelStratifiedKFold
+from .ml_stratifiers import MultilabelStratifiedKFold
 
 
 PATH = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization'
@@ -33,8 +33,8 @@ def split(n_splits=5, seed=42):
         for i in list(image_class_df.iloc[val]['id'].values):
             image_val.append([i, 'train'])
         
-        np.save(PATH + 'split/train_fold_%s_seed_%s.npy'%(fold_, seed), image_train)
-        np.save(PATH + 'split/val_fold_%s_seed_%s.npy'%(fold_, seed), image_val)
+        np.save(PATH + '/split/train_fold_%s_seed_%s.npy'%(fold_, seed), image_train)
+        np.save(PATH + '/split/val_fold_%s_seed_%s.npy'%(fold_, seed), image_val)
         
         
 if __name__ == "__main__":

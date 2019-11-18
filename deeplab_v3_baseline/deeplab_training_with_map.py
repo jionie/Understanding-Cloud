@@ -163,13 +163,13 @@ def deeplab_training(model_name,
     def get_model(model_name="deep_se101", in_channel=6, num_classes=1, criterion=SoftDiceLoss_binary()):
         if model_name == 'deep_se50':
             from semantic_segmentation.network.deepv3 import DeepSRNX50V3PlusD_m1  # r
-            model = DeepSRNX50V3PlusD_m1(in_channel=6, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+            model = DeepSRNX50V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
         elif model_name == 'deep_se101':
             from semantic_segmentation.network.deepv3 import DeepSRNX101V3PlusD_m1  # r
-            model = DeepSRNX101V3PlusD_m1(in_channel=6, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+            model = DeepSRNX101V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
         elif model_name == 'WideResnet38':
             from semantic_segmentation.network.deepv3 import DeepWR38V3PlusD_m1  # r
-            model = DeepWR38V3PlusD_m1(in_channel=6, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+            model = DeepWR38V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
         elif model_name == 'unet_ef3':
             from ef_unet import EfficientNet_3_unet
             model = EfficientNet_3_unet()

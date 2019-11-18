@@ -40,36 +40,34 @@ import torch.nn.utils.weight_norm as weightNorm
 import torch.nn.init as init
 from torch.nn.parallel.data_parallel import data_parallel
 
+from models.model import *
 import torchvision.models as models
 from apex import amp
 
 import albumentations
 from albumentations import torch as AT
 
-from utils.transform import *
-from utils.dataset import *
-from torch.utils.tensorboard import SummaryWriter
-from utils.ranger import *
-import utils.learning_schedules_fastai as lsf
-from utils.fastai_optim import OptimWrapper
-from utils.lrs_scheduler import * 
-from utils.other_loss import *
-from utils.lovasz_loss import *
-from utils.loss_function import *
-from utils.metric import *
-from utils.split_data import *
-from utils.ml_stratifiers import MultilabelStratifiedKFold
+from tuils.dataset import *
+from tuils.ranger import *
+import tuils.learning_schedules_fastai as lsf
+from tuils.fastai_optim import OptimWrapper
+from tuils.lrs_scheduler import * 
+from tuils.other_loss import *
+from tuils.lovasz_loss import *
+from tuils.loss_function import *
+from tuils.metric import *
+from tuils.split_data import *
+from tuils.ml_stratifiers import MultilabelStratifiedKFold
 
-from models.model import *
 
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model', type=str, default='seresnext101', required=False, help='specify the backbone model')
-parser.add_argument('--model_type', type=str, default='unet', required=False, help='specify the model')
+parser.add_argument('--model', type=str, default='deep_se101', required=False, help='specify the backbone model')
+parser.add_argument('--model_type', type=str, default='deeplab', required=False, help='specify the model')
 parser.add_argument('--optimizer', type=str, default='Ranger', required=False, help='specify the optimizer')
 parser.add_argument("--lr_scheduler", type=str, default='WarmRestart', required=False, help="specify the lr scheduler")
-parser.add_argument("--lr", type=int, default=2e-3, required=False, help="specify the initial learning rate for training")
+parser.add_argument("--lr", type=int, default=4e-3, required=False, help="specify the initial learning rate for training")
 parser.add_argument("--batch_size", type=int, default=4, required=False, help="specify the batch size for training")
 parser.add_argument("--valid_batch_size", type=int, default=4, required=False, help="specify the batch size for validating")
 parser.add_argument("--num_epoch", type=int, default=15, required=False, help="specify the total epoch")
@@ -83,8 +81,7 @@ parser.add_argument('--load_pretrain', action='store_true', default=False, help=
 
 
 ############################################################################## define constant
-SEED = 2019
-N_SPLITS = 5
+SEED = 42
 NUM_TRAIN = 5546
 NUM_TEST  = 3698
 
@@ -141,21 +138,21 @@ def transform_train(image, label, mask, infor):
     if random.random() < 0.5:
         
         image = albumentations.OneOf([
-            albumentations.RandomGamma(gamma_limit=(60, 120), p=0.1),
-            albumentations.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.1),
-            albumentations.CLAHE(clip_limit=4.0, tile_grid_size=(4, 4), p=0.1),
+            albumentations.RandomGamma(gamma_limit=(60, 120), p=0.9),
+            albumentations.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.9),
+            albumentations.CLAHE(clip_limit=4.0, tile_grid_size=(4, 4), p=0.9),
         ])(image=image)['image']
-    
-    if random.random() < 0.5:  
+        
         image = albumentations.OneOf([
             albumentations.Blur(blur_limit=4, p=1),
             albumentations.MotionBlur(blur_limit=4, p=1),
             albumentations.MedianBlur(blur_limit=4, p=1)
         ], p=0.5)(image=image)['image']
+        # image = albumentations.Blur(blur_limit=3)(image=image)['image']
 
     if random.random() < 0.5:
-        image = albumentations.Cutout(num_holes=2, max_h_size=8, max_w_size=8, p=1)(image=image)['image']
-        mask = albumentations.Cutout(num_holes=2, max_h_size=8, max_w_size=8, p=1)(image=mask)['image']
+        image = albumentations.Cutout(num_holes=1, max_h_size=16, max_w_size=16, p=1)(image=image)['image']
+        mask = albumentations.Cutout(num_holes=1, max_h_size=16, max_w_size=16, p=1)(image=mask)['image']
         
     # if random.random() < 0.5:
     #     image = albumentations.RandomRotate90(p=1)(image=image)['image']
@@ -170,17 +167,35 @@ def transform_train(image, label, mask, infor):
     #     mask = albumentations.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.15, rotate_limit=45, p=1)(image=mask)['image']
     
     image = albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0)(image=image)['image']
-    # image = albumentations.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0, p=1.0)(image=image)['image']
-    
+
     return image, label, mask, infor
 
 def transform_valid(image, label, mask, infor):
     
     image = albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0)(image=image)['image']
-    # image = albumentations.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0, p=1.0)(image=image)['image']
 
     return image, label, mask, infor
 
+
+# define augumentation for TTA
+def transform_test(image):
+    
+    image_hard = image.copy()
+    image_simple = image.copy()
+
+    if random.random() < 0.5:
+        image = albumentations.VerticalFlip(p=1)(image=image)['image']
+        mask = albumentations.VerticalFlip(p=1)(image=mask)['image']
+
+    if random.random() < 0.5:
+        image = albumentations.HorizontalFlip(p=1)(image=image)['image']
+        mask = albumentations.HorizontalFlip(p=1)(image=mask)['image']
+     
+     
+    image = albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0)(image=image)['image']   
+    # image = albumentations.Normalize(image=image)['image']
+
+    return image_simple, image_hard
 
 
 def children(m: nn.Module):
@@ -189,7 +204,21 @@ def children(m: nn.Module):
 def num_children(m: nn.Module):
     return len(children(m))
 
-def unet_training(model_name,
+def load(model, pretrain_file, skip=[]):
+    pretrain_state_dict = torch.load(pretrain_file)
+    state_dict = model.state_dict()
+    keys = list(state_dict.keys())
+    for key in keys:
+        if any(s in key for s in skip): continue
+        try:
+            state_dict[key] = pretrain_state_dict[key]
+        except:
+            print(key)
+    model.load_state_dict(state_dict)
+    
+    return model
+
+def deeplab_training(model_name,
                   model_type,
                   optimizer_name,
                   lr_scheduler_name,
@@ -201,9 +230,6 @@ def unet_training(model_name,
                   accumulation_steps,
                   train_data_folder, 
                   checkpoint_folder,
-                  train_split,
-                  val_split,
-                  fold,
                   load_pretrain
                   ):
     
@@ -229,10 +255,11 @@ def unet_training(model_name,
     COMMON_STRING += '\t\ttorch.cuda.device_count()      = %d\n'%torch.cuda.device_count()
     COMMON_STRING += '\n'
     
-    os.makedirs(checkpoint_folder + '/' + model_type + '/' + model_name, exist_ok=True)
+    if not os.path.exists(checkpoint_folder + '/' + model_type + '/' + model_name):
+        os.mkdir(checkpoint_folder + '/' + model_type + '/' + model_name)
     
     log = Logger()
-    log.open(checkpoint_folder + '/' + model_type + '/' + model_name + '/' + model_name + '_fold_' + str(fold) + '_log_train.txt', mode='a+')
+    log.open(checkpoint_folder + '/' + model_type + '/' + model_name + '/' + model_name + '_log_train.txt', mode='a+')
     log.write('\t%s\n' % COMMON_STRING)
     log.write('\n')
 
@@ -250,7 +277,7 @@ def unet_training(model_name,
         data_dir = train_data_folder,
         mode     = 'train',
         csv      = ['train.csv',],
-        split    = train_split,
+        split    = ['by_random1/train_fold_a0_5246.npy',],
         augment  = transform_train,
     )
     train_dataloader  = DataLoader(
@@ -267,7 +294,8 @@ def unet_training(model_name,
         data_dir = train_data_folder,
         mode    = 'train',
         csv     = ['train.csv',],
-        split   = val_split,
+        split   = ['by_random1/valid_fold_a0_300.npy',],
+        #split   = ['by_random1/valid_small_fold_a0_120.npy',],
         augment = transform_valid,
     )
     valid_dataloader = DataLoader(
@@ -288,25 +316,37 @@ def unet_training(model_name,
     MASK_WIDTH = 525
     MASK_HEIGHT = 350
     
-    def get_unet_model(model_name="efficientnet-b3", IN_CHANNEL=3, NUM_CLASSES=2, WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT):
-        model = model_iMet(model_name, IN_CHANNEL, NUM_CLASSES, WIDTH, HEIGHT)
-        
-        # Optional, for multi GPU training and inference
-        # model = nn.DataParallel(model)
+    def get_model(model_name="deep_se101", in_channel=6, num_classes=1, criterion=SoftDiceLoss_binary()):
+        if model_name == 'deep_se50':
+            from semantic_segmentation.network.deepv3 import DeepSRNX50V3PlusD_m1  # r
+            model = DeepSRNX50V3PlusD_m1(in_channel=6, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'deep_se101':
+            from semantic_segmentation.network.deepv3 import DeepSRNX101V3PlusD_m1  # r
+            model = DeepSRNX101V3PlusD_m1(in_channel=6, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'WideResnet38':
+            from semantic_segmentation.network.deepv3 import DeepWR38V3PlusD_m1  # r
+            model = DeepWR38V3PlusD_m1(in_channel=6, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'unet_ef3':
+            from ef_unet import EfficientNet_3_unet
+            model = EfficientNet_3_unet()
+        elif model_name == 'unet_ef5':
+            from ef_unet import EfficientNet_5_unet
+            model = EfficientNet_5_unet()
+        else:
+            print('No model name in it')
+            model = None
         return model
-    
-    
 
 
     ############################################################################### training parameters
-    checkpoint_filename = model_type + '/' + model_name + '/' + model_name + "_" + model_type + '_fold_' + str(fold) + "_checkpoint.pth"
+    checkpoint_filename = model_type + '/' + model_name + '/' + model_name + "_" + model_type + "_deeplab_checkpoint.pth"
     checkpoint_filepath = os.path.join(checkpoint_folder, checkpoint_filename)
 
 
     ############################################################################### model and optimizer
-    model = get_unet_model(model_name=model_name, IN_CHANNEL=3, NUM_CLASSES=len(CLASSNAME_TO_CLASSNO), WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT)
+    model = get_model(model_name=model_name, in_channel=3, num_classes=len(CLASSNAME_TO_CLASSNO), criterion=SoftDiceLoss_binary())
     if (load_pretrain):
-        model.load_pretrain(checkpoint_filepath)
+        model = load(model, checkpoint_filepath)
     model = model.cuda()
     
     if optimizer_name == "Adam":
@@ -368,7 +408,7 @@ def unet_training(model_name,
                 if epoch != 0:
                     scheduler.step()
                     scheduler = warm_restart(scheduler, T_mult=2) 
-            elif epoch > 5 and epoch < 8:
+            elif epoch > 5 and epoch < 7:
                 optimizer.param_groups[0]['lr'] = 1e-5
             else:
                 optimizer.param_groups[0]['lr'] = 5e-6
@@ -400,7 +440,9 @@ def unet_training(model_name,
             truth_label = truth_label.cuda()
             truth_mask  = truth_mask.cuda()
             prediction = model(X)  # [N, C, H, W]
-            loss = criterion_mask(prediction, truth_mask, weight=None)
+            
+            loss = SoftDiceLoss_binary()(prediction, truth_mask) + \
+                   criterion_mask(prediction, truth_mask, weight=None)
 
             with amp.scale_loss(loss/accumulation_steps, optimizer) as scaled_loss:
                 scaled_loss.backward()
@@ -412,7 +454,7 @@ def unet_training(model_name,
                 optimizer.step()
                 optimizer.zero_grad()
 
-                writer.add_scalar('train_loss_' + str(fold), loss.item(), (epoch-1)*len(train_dataloader)*batch_size+tr_batch_i*batch_size)
+                writer.add_scalar('train_loss', loss.item(), (epoch-1)*len(train_dataloader)*batch_size+tr_batch_i*batch_size)
             
             # print statistics  --------
             probability_mask  = torch.sigmoid(prediction)
@@ -434,9 +476,9 @@ def unet_training(model_name,
                     (rate, train_loss[0], train_loss[1], train_loss[2], train_loss[3], train_loss[4], train_loss[5]))
             
 
-            if (tr_batch_i+1) % eval_step == 0:  
+            if (tr_batch_i+1) % eval_step == 0: 
                 
-                eval_count += 1
+                eval_count += 1 
                 
                 valid_loss = np.zeros(17, np.float32)
                 valid_num  = np.zeros_like(valid_loss)
@@ -455,10 +497,10 @@ def unet_training(model_name,
                         truth_mask  = truth_mask.cuda()
                         prediction = model(X)  # [N, C, H, W]
 
-                        #SoftDiceLoss_binary()(prediction, truth_mask)
-                        loss = criterion_mask(prediction, truth_mask, weight=None)
+                        loss = SoftDiceLoss_binary()(prediction, truth_mask) + \
+                            criterion_mask(prediction, truth_mask, weight=None)
                             
-                        writer.add_scalar('val_loss_' + str(fold), loss.item(), (eval_count-1)*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
+                        writer.add_scalar('val_loss', loss.item(), (eval_count-1)*len(valid_dataloader)*valid_batch_size+val_batch_i*valid_batch_size)
                         
                         # print statistics  --------
                         probability_mask  = torch.sigmoid(prediction)
@@ -509,13 +551,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    split(n_splits=N_SPLITS, seed=SEED)
-    
-    for fold_ in range(N_SPLITS):
-        
-        train_split = ['train_fold_%s_seed_%s.npy'%(fold_, SEED)]
-        val_split = ['val_fold_%s_seed_%s.npy'%(fold_, SEED)]
-    
-        unet_training(args.model, args.model_type, args.optimizer, args.lr_scheduler, args.lr, args.batch_size, args.valid_batch_size, \
-                        args.num_epoch, args.start_epoch, args.accumulation_steps, args.train_data_folder, \
-                        args.checkpoint_folder, train_split, val_split, fold_, args.load_pretrain)
+    deeplab_training(args.model, args.model_type, args.optimizer, args.lr_scheduler, args.lr, args.batch_size, args.valid_batch_size, \
+                    args.num_epoch, args.start_epoch, args.accumulation_steps, args.train_data_folder, \
+                    args.checkpoint_folder, args.load_pretrain)
