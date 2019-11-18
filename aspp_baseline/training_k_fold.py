@@ -229,12 +229,8 @@ def unet_training(model_name,
 
     COMMON_STRING += '\t\ttorch.cuda.device_count()      = %d\n'%torch.cuda.device_count()
     COMMON_STRING += '\n'
-    
-    # if not os.path.exists(checkpoint_folder + '/' + model_type):
-    #     os.mkdir(checkpoint_folder + '/' + model_type)
         
-    if not os.path.exists(checkpoint_folder + '/' + model_type + '/' + model_name):
-        os.mkdir(checkpoint_folder + '/' + model_type + '/' + model_name)
+    os.makedirs(checkpoint_folder + '/' + model_type + '/' + model_name, exist_ok=True)
     
     log = Logger()
     log.open(checkpoint_folder + '/' + model_type + '/' + model_name + '/' + model_name + '_fold_' + str(fold) + '_log_train.txt', mode='a+')
@@ -367,10 +363,10 @@ def unet_training(model_name,
                 if epoch != 0:
                     scheduler.step()
                     scheduler = warm_restart(scheduler, T_mult=2) 
-                elif epoch > 5 and epoch < 7:
-                    optimizer.param_groups[0]['lr'] = 1e-5
-                else:
-                    optimizer.param_groups[0]['lr'] = 5e-6
+            elif epoch > 5 and epoch < 7:
+                optimizer.param_groups[0]['lr'] = 1e-5
+            else:
+                optimizer.param_groups[0]['lr'] = 5e-6
             
         if (epoch < start_epoch):
             continue

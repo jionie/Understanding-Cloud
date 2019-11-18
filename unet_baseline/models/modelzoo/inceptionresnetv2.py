@@ -310,14 +310,14 @@ class InceptionResNetV2(nn.Module):
         x = self.conv2d_4a(x)
         x = self.maxpool_5a(x)
         x = self.mixed_5b(x)
-        x = self.repeat(x)
-        x = self.mixed_6a(x)
-        x = self.repeat_1(x)
-        x = self.mixed_7a(x)
-        x = self.repeat_2(x)
-        x = self.block8(x)
-        x = self.conv2d_7b(x)
-        return x
+        x1 = self.repeat(x)
+        x = self.mixed_6a(x1)
+        x2 = self.repeat_1(x)
+        x = self.mixed_7a(x2)
+        x3 = self.repeat_2(x)
+        x = self.block8(x3)
+        x4 = self.conv2d_7b(x)
+        return x, x1, x2, x3, x4
 
     def logits(self, features):
         x = self.avgpool_1a(features)
@@ -326,9 +326,9 @@ class InceptionResNetV2(nn.Module):
         return x
 
     def forward(self, input):
-        x = self.features(input)
-        x = self.logits(x)
-        return x
+        x, x1, x2, x3, x4 = self.features(input)
+        # x = self.logits(x)
+        return x1, x2, x3, x4
 
 
 def inceptionresnetv2(num_classes=1000, pretrained='imagenet'):

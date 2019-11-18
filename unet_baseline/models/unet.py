@@ -89,6 +89,15 @@ class Unet(nn.Module):
             self.down2 = nn.Conv2d(512, self.planes[1], kernel_size=1)
             self.down3 = nn.Conv2d(1024, self.planes[2], kernel_size=1)
             self.down4 = nn.Conv2d(2048, self.planes[3], kernel_size=1)
+            
+        if model_name == 'inceptionresnetv2':
+            self.basemodel = inceptionresnetv2(num_classes=1001, pretrained='imagenet')
+            self.planes = [256 // 4, 512 // 4, 1024 // 4, 2048 // 4]   
+            self.down1 = nn.Conv2d(320, self.planes[0], kernel_size=1)
+            self.down2 = nn.Conv2d(1088, self.planes[1], kernel_size=1)
+            self.down3 = nn.Conv2d(2080, self.planes[2], kernel_size=1)
+            self.down4 = nn.Conv2d(1536, self.planes[3], kernel_size=1)
+        
         if model_name == 'resnet34':
             self.basemodel = resnet34(True)
             self.planes = [256 // 4, 512 // 4, 1024 // 4, 2048 // 4]
@@ -113,31 +122,8 @@ class Unet(nn.Module):
             self.startconv = nn.Conv2d(IN_CHANNEL, 3, kernel_size=1)
             self.basemodel = EfficientNet.from_pretrained('efficientnet-b5')
             self.planes = [40, 40, 128, 176]
-#            self.down1 = nn.Conv2d(40, self.planes[0], kernel_size=1)
-#            self.down2 = nn.Conv2d(64, self.planes[1], kernel_size=1)
-#            self.down3 = nn.Conv2d(176, self.planes[2], kernel_size=1)
-#            self.down4 = nn.Conv2d(512, self.planes[3], kernel_size=1)
             self.down = False
-            
-        # if model_name == 'efficientnet-b7':
-        #     self.startconv = nn.Conv2d(IN_CHANNEL, 3, kernel_size=1)
-        #     self.basemodel = EfficientNet.from_pretrained('efficientnet-b7')
 
-        #     self.planes = [256 // 4, 512 // 4, 1024 // 4, 2048 // 4]
-        #     self.down1 = nn.Conv2d(40, self.planes[0], kernel_size=1)
-        #     self.down2 = nn.Conv2d(64, self.planes[1], kernel_size=1)
-        #     self.down3 = nn.Conv2d(176, self.planes[2], kernel_size=1)
-        #     self.down4 = nn.Conv2d(512, self.planes[3], kernel_size=1)
-            
-        # if model_name == 'efficientnet-b5':
-        #     self.startconv = nn.Conv2d(IN_CHANNEL, 3, kernel_size=1)
-        #     self.basemodel = EfficientNet.from_pretrained('efficientnet-b5')
-
-        #     self.planes = [256 // 4, 512 // 4, 1024 // 4, 2048 // 4]
-        #     self.down1 = nn.Conv2d(40, self.planes[0], kernel_size=1)
-        #     self.down2 = nn.Conv2d(64, self.planes[1], kernel_size=1)
-        #     self.down3 = nn.Conv2d(176, self.planes[2], kernel_size=1)
-        #     self.down4 = nn.Conv2d(512, self.planes[3], kernel_size=1)
 
         if model_name == 'efficientnet-b3':
             self.startconv = nn.Conv2d(IN_CHANNEL, 3, kernel_size=1)

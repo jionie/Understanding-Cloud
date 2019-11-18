@@ -285,6 +285,12 @@ class Net(nn.Module):
             self.basemodel = EfficientNet.from_pretrained('efficientnet-b5')
             self.planes = [40, 40, 128, 176]
             self.down = False
+            
+        if name == 'efficientnet-b4':
+            self.startconv = nn.Conv2d(3, 3, kernel_size=1)
+            self.basemodel = EfficientNet.from_pretrained('efficientnet-b4')
+            self.planes = [32, 56, 112, 272]
+            self.down = False
 
         if name == 'efficientnet-b3':
             self.startconv = nn.Conv2d(3, 3, kernel_size=1)
@@ -322,6 +328,7 @@ class Net(nn.Module):
         batch_size, C, H, W = x.shape
         x = F.pad(x,[18,18,2,2],mode='constant', value=0) #pad = (left, right, top, down)
         x1, x2, x3, x4 = self.basemodel(x)
+        # print(x1.shape, x2.shape, x3.shape, x4.shape)
         
         if self.down:
             x1 = self.down1(x1)

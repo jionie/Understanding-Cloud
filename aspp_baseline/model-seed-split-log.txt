@@ -1,7 +1,0 @@
-model: aspp + seresnext50
-seed: 42
-split: 5 fold
-
-model: aspp + efficientnet-b3
-seed: 323
-split: 5 fold

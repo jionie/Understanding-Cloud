@@ -1,0 +1,34 @@
+model: aspp + seresnext50
+seed: 42
+split: 5 fold
+
+model: aspp + efficientnet-b3
+seed: 323
+split: 5 fold
+
+model: aspp + ResNet34
+seed: 42
+split: frog
+
+model: aspp + efficientnet-b4
+seed: 42
+split: frog
+
+model: unet + efficientnet-b7
+seed: 1996
+split: 5 fold
+
+ongoing
+model:　unet + seresnext101
+seed: 2019
+split: 5 fold
+
+not good
+model: unet + efficientnet-b5
+seed: 42
+split: frog
+
+
+model: deeplabv3+ + seresnext101
+seed: 2020
+split: 5 fold
