@@ -1,6 +1,6 @@
 import os
-from utils.kaggle import *
-from utils.metric import *
+from unet_baseline.utils.kaggle import *
+from unet_baseline.utils.metric import *
 import gc
 
 
@@ -36,17 +36,12 @@ NUM_CLASS = len(CLASSNAME_TO_CLASSNO)
 
 def run_test_ensemble_segmentation_only():
     
-    model = ['ResNet34', 'seresnext50', 'efficientnet-b4', 'efficientnet-b3']
+    # model = ['ResNet34-seresnext50-efficientnet-b4-efficientnet-b3', 'deep_se50-deep_se101']
+    model = ['ResNet34-seresnext50-efficientnet-b4-efficientnet-b3', 'efficientnet-b7-seresnext101', 'deep_se50-deep_se101']
     dir = []
-    
+
     for i in range(len(model)):
-        dir.append('/media/jionie/my_disk/Kaggle/Cloud/result/aspp/%s/test/submit/test-tta'%(model[i]))
-    
-    # dir=[
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/seresnext50/test/submit/test-tta',
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/efficientnet-b3/test/submit/submit/test-tta',
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/ResNet34/test/submit/submit/test-tta'
-    # ]
+        dir.append('/media/jionie/my_disk/Kaggle/Cloud/result/ensemble/%s'%(model[i]))
 
     out_dir = '/media/jionie/my_disk/Kaggle/Cloud/result/ensemble/'
     
@@ -61,41 +56,26 @@ def run_test_ensemble_segmentation_only():
     
     num_ensemble = 0
 
-    fold = [1, 5, 1, 5]
-
+    # fold = [20, 5]
+    fold = [20, 8, 5]
+    
     for t in range(len(dir)):
         d = dir[t]
         print(t, d)
         
-        if (fold[t] == 1):
-            num_ensemble += 5
-            image_id          = read_list_from_file(d +'/image_id.txt')
-            probability_label = np.load(d +'/probability_label.uint8.npz')['arr_0']
-            probability_mask  = np.load(d +'/probability_mask.uint8.npz')['arr_0']
-            probability_label = probability_label.astype(np.float32) /255
-            probability_mask  = probability_mask.astype(np.float32) /255
-            
-            if t == 0:
-                ensemble_label = probability_label * 5
-                ensemble_mask  = probability_mask * 5
-            else:
-                ensemble_label += probability_label * 5
-                ensemble_mask  += probability_mask * 5
+        num_ensemble += fold[t]
+        image_id          = read_list_from_file(d +'/image_id.txt')
+        probability_label = np.load(d +'/probability_label.uint8.npz')['arr_0']
+        probability_mask  = np.load(d +'/probability_mask.uint8.npz')['arr_0']
+        probability_label = probability_label.astype(np.float32) /255
+        probability_mask  = probability_mask.astype(np.float32) /255
+        
+        if t == 0:
+            ensemble_label = probability_label * fold[t]
+            ensemble_mask  = probability_mask * fold[t]
         else:
-            for i in range(fold[t]):
-                num_ensemble += 1
-                image_id          = read_list_from_file(d +'/image_id_%s.txt'%(str(i)))
-                probability_label = np.load(d +'/probability_label_%s.uint8.npz'%(str(i)))['arr_0']
-                probability_mask  = np.load(d +'/probability_mask_%s.uint8.npz'%(str(i)))['arr_0']
-                probability_label = probability_label.astype(np.float32) /255
-                probability_mask  = probability_mask.astype(np.float32) /255
-                
-                if t == 0:
-                    ensemble_label = probability_label
-                    ensemble_mask  = probability_mask
-                else:
-                    ensemble_label += probability_label
-                    ensemble_mask  += probability_mask
+            ensemble_label += probability_label * fold[t]
+            ensemble_mask  += probability_mask * fold[t]
 
     del probability_label, probability_mask
     gc.collect()
@@ -113,7 +93,8 @@ def run_test_ensemble_segmentation_only():
 
 
     #---
-    threshold_label      = [ 0.70, 0.70, 0.70, 0.70,]
+    threshold_label      = [ 0.60, 0.70, 0.55, 0.65,]
+    # threshold_label      = [ 0.50, 0.60, 0.45, 0.60,]
     threshold_mask_pixel = [ 0.30, 0.30, 0.30, 0.30,]
     threshold_mask_size  = [ 1,  1,  1,  1,]
 
