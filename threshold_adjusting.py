@@ -1,6 +1,6 @@
 import os
-from utils.kaggle import *
-from utils.metric import *
+from unet_baseline.utils.kaggle import *
+from unet_baseline.utils.metric import *
 import gc
 
 
@@ -36,19 +36,13 @@ NUM_CLASS = len(CLASSNAME_TO_CLASSNO)
 
 def run_test_ensemble_segmentation_only():
     
-    model = ['ResNet34', 'seresnext50', 'efficientnet-b4', 'efficientnet-b3']
+    model = ['ResNet34-seresnext50-efficientnet-b4-efficientnet-b3-efficientnet-b7-seresnext101-deep_se50-deep_se101']
     dir = []
-    
-    for i in range(len(model)):
-        dir.append('/media/jionie/my_disk/Kaggle/Cloud/result/aspp/%s/test/submit/test-tta'%(model[i]))
-    
-    # dir=[
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/seresnext50/test/submit/test-tta',
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/efficientnet-b3/test/submit/submit/test-tta',
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/ResNet34/test/submit/submit/test-tta'
-    # ]
 
-    out_dir = '/media/jionie/my_disk/Kaggle/Cloud/result/ensemble/'
+    for i in range(len(model)):
+        dir.append('/media/jionie/my_disk/Kaggle/Cloud/result/ensemble/%s'%(model[i]))
+
+    out_dir = '/media/jionie/my_disk/Kaggle/Cloud/result/threshold/'
     
     for m in model:
         out_dir += m + '-'
@@ -59,50 +53,24 @@ def run_test_ensemble_segmentation_only():
     log = Logger()
     log.open(out_dir+'/log-ensemble-seg.txt',mode='a')
     
-    num_ensemble = 0
-
-    fold = [1, 5, 1, 5]
-
     for t in range(len(dir)):
         d = dir[t]
         print(t, d)
         
-        if (fold[t] == 1):
-            num_ensemble += 5
-            image_id          = read_list_from_file(d +'/image_id.txt')
-            probability_label = np.load(d +'/probability_label.uint8.npz')['arr_0']
-            probability_mask  = np.load(d +'/probability_mask.uint8.npz')['arr_0']
-            probability_label = probability_label.astype(np.float32) /255
-            probability_mask  = probability_mask.astype(np.float32) /255
-            
-            if t == 0:
-                ensemble_label = probability_label * 5
-                ensemble_mask  = probability_mask * 5
-            else:
-                ensemble_label += probability_label * 5
-                ensemble_mask  += probability_mask * 5
-        else:
-            for i in range(fold[t]):
-                num_ensemble += 1
-                image_id          = read_list_from_file(d +'/image_id_%s.txt'%(str(i)))
-                probability_label = np.load(d +'/probability_label_%s.uint8.npz'%(str(i)))['arr_0']
-                probability_mask  = np.load(d +'/probability_mask_%s.uint8.npz'%(str(i)))['arr_0']
-                probability_label = probability_label.astype(np.float32) /255
-                probability_mask  = probability_mask.astype(np.float32) /255
-                
-                if t == 0:
-                    ensemble_label = probability_label
-                    ensemble_mask  = probability_mask
-                else:
-                    ensemble_label += probability_label
-                    ensemble_mask  += probability_mask
+        image_id          = read_list_from_file(d +'/image_id.txt')
+        probability_label = np.load(d +'/probability_label.uint8.npz')['arr_0']
+        probability_mask  = np.load(d +'/probability_mask.uint8.npz')['arr_0']
+        probability_label = probability_label.astype(np.float32) /255
+        probability_mask  = probability_mask.astype(np.float32) /255
+        
+        ensemble_label = probability_label
+        ensemble_mask  = probability_mask
 
     del probability_label, probability_mask
     gc.collect()
 
-    print("num ensemble:", num_ensemble)
-    ensemble_label = ensemble_label/num_ensemble
-    ensemble_mask  = ensemble_mask/num_ensemble
+    ensemble_label = ensemble_label
+    ensemble_mask  = ensemble_mask
     ensemble_label = (ensemble_label*255).astype(np.uint8)
     ensemble_mask = (ensemble_mask*255).astype(np.uint8)
 
@@ -113,7 +81,7 @@ def run_test_ensemble_segmentation_only():
 
 
     #---
-    threshold_label      = [ 0.70, 0.70, 0.70, 0.70,]
+    threshold_label      = [ 0.50, 0.60, 0.50, 0.60,]
     threshold_mask_pixel = [ 0.30, 0.30, 0.30, 0.30,]
     threshold_mask_size  = [ 1,  1,  1,  1,]
 
@@ -158,21 +126,6 @@ def run_test_ensemble_segmentation_only():
     text = summarise_submission_csv(df)
     log.write('\n')
     log.write('%s'%(text))
-
-    ##evalue based on probing results
-    # text = do_local_submit(image_id, predict_label,predict_mask=None)
-    # log.write('\n')
-    # log.write('%s'%(text))
-
-
-    #--
-    # local_result = find_local_threshold(image_id, probability_label, cutoff=[100,0,575,110])
-    # threshold_label = [local_result[0][0],local_result[1][0],local_result[2][0],local_result[3][0]]
-    # log.write('test threshold_label=%s\n'%str(threshold_label))
-    #
-    # predict_label = probability_label>(np.array(threshold_label)*255).astype(np.uint8).reshape(1,4)
-    # text = do_local_submit(image_id, predict_label,predict_mask=None)
-    # log.write('\n')
     log.write('%s'%(text))
 
 

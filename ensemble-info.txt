@@ -1,0 +1,3 @@
+aspp: 20 models
+unet: 8 models
+deeplab: 3 models

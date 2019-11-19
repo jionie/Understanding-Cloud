@@ -58,7 +58,7 @@ from utils.lovasz_loss import *
 from utils.loss_function import *
 from utils.metric import *
 
-from model import *
+from models.model import *
 
 
 ############################################################################## define constant
@@ -97,7 +97,7 @@ DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organiz
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model_name', type=str, default='efficientnet-b3', required=False, help='specify the backbone model')
+parser.add_argument('--model_name', type=str, default='seresnext101', required=False, help='specify the backbone model')
 parser.add_argument('--model_type', type=str, default='unet', required=False, help='specify the segmentation model, deeplab, unet or fpn')
 parser.add_argument('--mode', type=str, default='test', required=False, help='specify the mode, valid or test')
 parser.add_argument("--is_save", action='store_true', default=True, help="whether to save predicted result as npy")
@@ -316,16 +316,22 @@ def run_submit_segmentation(model_name,
     ############################################################################## define unet model with backbone
     MASK_WIDTH = 525
     MASK_HEIGHT = 350
+    
+    def get_unet_model(model_name="efficientnet-b3", IN_CHANNEL=3, NUM_CLASSES=2, WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT):
+        model = model_iMet(model_name, IN_CHANNEL, NUM_CLASSES, WIDTH, HEIGHT)
+        
+        # Optional, for multi GPU training and inference
+        # model = nn.DataParallel(model)
+        return model
 
 
     if is_save: #save
         ## net ----------------------------------------
         log.write('** net setting **\n')
 
-        model = Net(model_name, len(CLASSNAME_TO_CLASSNO))
-        state_dict = torch.load(initial_checkpoint, map_location=lambda storage, loc: storage)
-        model.load_state_dict(state_dict, strict=True)
-        model = model.cuda()  
+        model = get_unet_model(model_name=model_name, IN_CHANNEL=3, NUM_CLASSES=len(CLASSNAME_TO_CLASSNO), WIDTH=MASK_WIDTH, HEIGHT=MASK_HEIGHT)
+        model.load_pretrain(initial_checkpoint)
+        model = model.cuda()    
 
         log.write('\tinitial_checkpoint = %s\n' % initial_checkpoint)
         log.write('\n')

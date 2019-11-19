@@ -59,6 +59,8 @@ from utils.lovasz_loss import *
 from utils.loss_function import *
 from utils.metric import *
 
+from models.model import *
+
 
 ############################################################################## define constant
 SEED = 42
@@ -126,7 +128,7 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
     test_loader = DataLoader(
         test_dataset,
         sampler     = SequentialSampler(test_dataset),
-        batch_size  = 32,
+        batch_size  = batchsize,
         drop_last   = False,
         num_workers = 4,
         pin_memory  = True,
@@ -336,7 +338,7 @@ def run_submit_segmentation(model_name,
 
 
         image_id, truth_label, truth_mask, probability_label, probability_mask,  =\
-            do_evaluate_segmentation(model, test_dataset, augment)
+            do_evaluate_segmentation(model, test_dataset, batchsize, augment)
 
         write_list_to_file (out_dir + '/submit/%s/image_id.txt'%(mode_folder),image_id)
         np.savez_compressed(out_dir + '/submit/%s/probability_label.uint8.npz'%(mode_folder), probability_label)

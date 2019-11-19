@@ -36,17 +36,11 @@ NUM_CLASS = len(CLASSNAME_TO_CLASSNO)
 
 def run_test_ensemble_segmentation_only():
     
-    model = ['ResNet34', 'seresnext50', 'efficientnet-b4', 'efficientnet-b3']
+    model = ['efficientnet-b7', 'seresnext101']
     dir = []
     
     for i in range(len(model)):
-        dir.append('/media/jionie/my_disk/Kaggle/Cloud/result/aspp/%s/test/submit/test-tta'%(model[i]))
-    
-    # dir=[
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/seresnext50/test/submit/test-tta',
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/efficientnet-b3/test/submit/submit/test-tta',
-    #     '/media/jionie/my_disk/Kaggle/Cloud/result/aspp/ResNet34/test/submit/submit/test-tta'
-    # ]
+        dir.append('/media/jionie/my_disk/Kaggle/Cloud/result/unet/%s/test/submit/test-tta'%(model[i]))
 
     out_dir = '/media/jionie/my_disk/Kaggle/Cloud/result/ensemble/'
     
@@ -61,8 +55,8 @@ def run_test_ensemble_segmentation_only():
     
     num_ensemble = 0
 
-    fold = [1, 5, 1, 5]
-
+    fold = [5, 3]
+    
     for t in range(len(dir)):
         d = dir[t]
         print(t, d)
@@ -90,7 +84,7 @@ def run_test_ensemble_segmentation_only():
                 probability_label = probability_label.astype(np.float32) /255
                 probability_mask  = probability_mask.astype(np.float32) /255
                 
-                if t == 0:
+                if (t == 0 and i == 0):
                     ensemble_label = probability_label
                     ensemble_mask  = probability_mask
                 else:

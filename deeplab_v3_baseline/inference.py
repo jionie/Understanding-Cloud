@@ -40,25 +40,24 @@ import torch.nn.utils.weight_norm as weightNorm
 import torch.nn.init as init
 from torch.nn.parallel.data_parallel import data_parallel
 
+from models.model import *
 import torchvision.models as models
 from apex import amp
 
 import albumentations
 from albumentations import torch as AT
 
-from utils.transform import *
-from utils.dataset import *
-from torch.utils.tensorboard import SummaryWriter
-from utils.ranger import *
-import utils.learning_schedules_fastai as lsf
-from utils.fastai_optim import OptimWrapper
-from utils.lrs_scheduler import * 
-from utils.other_loss import *
-from utils.lovasz_loss import *
-from utils.loss_function import *
-from utils.metric import *
-
-from model import *
+from tuils.dataset import *
+from tuils.ranger import *
+import tuils.learning_schedules_fastai as lsf
+from tuils.fastai_optim import OptimWrapper
+from tuils.lrs_scheduler import * 
+from tuils.other_loss import *
+from tuils.lovasz_loss import *
+from tuils.loss_function import *
+from tuils.metric import *
+from tuils.split_data import *
+from tuils.ml_stratifiers import MultilabelStratifiedKFold
 
 
 ############################################################################## define constant
@@ -96,11 +95,11 @@ DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organiz
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model_name', type=str, default='efficientnet-b4', required=False, help='specify the backbone model')
-parser.add_argument('--model_type', type=str, default='aspp', required=False, help='specify the segmentation model, deeplab, unet or fpn')
+parser.add_argument('--model_name', type=str, default='efficientnet-b5', required=False, help='specify the backbone model')
+parser.add_argument('--model_type', type=str, default='unet', required=False, help='specify the segmentation model, deeplab, unet or fpn')
 parser.add_argument('--mode', type=str, default='test', required=False, help='specify the mode, valid or test')
 parser.add_argument("--is_save", action='store_true', default=True, help="whether to save predicted result as npy")
-parser.add_argument("--batch_size", type=int, default=16, required=False, help="specify the batch size for dataloader")
+parser.add_argument("--batch_size", type=int, default=32, required=False, help="specify the batch size for dataloader")
 parser.add_argument("--test_data_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organization", \
     required=False, help="specify the folder for data")
 parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/model", \
@@ -143,19 +142,17 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
     test_probability_mask  = [] # 8bit
     test_truth_label = [] # 8bit
     test_truth_mask  = [] # 8bit
-    
-    with torch.no_grad():
-                    
-        torch.cuda.empty_cache()
-        net.eval()
 
-        for batch_i, (input, truth_label, truth_mask, infor) in enumerate(test_loader):
-            
-            if (batch_i % 10 == 0):
-                print("processing", batch_i, "batch of", len(test_loader), "batches")
+    for batch_i, (input, truth_label, truth_mask, infor) in enumerate(test_loader):
+        
+        if (batch_i % 10 == 0):
+            print("processing", batch_i, "batch of", len(test_loader), "batches")
 
-            batch_size, C , H, W = input.shape
-            input = input.cuda()
+        batch_size, C , H, W = input.shape
+        input = input.cuda()
+
+        with torch.no_grad():
+            net.eval()
 
             num_augment = 0
             if 1: #  null
@@ -194,19 +191,19 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
             probability_mask  = probability_mask/num_augment
             probability_label = probability_label/num_augment
 
-            #---
-            batch_size  = len(infor)
-            truth_label = truth_label.data.cpu().numpy().astype(np.uint8)
-            truth_mask  = truth_mask.data.cpu().numpy().astype(np.uint8)
-            probability_mask = (probability_mask.data.cpu().numpy()*255).astype(np.uint8)
-            probability_label = (probability_label.data.cpu().numpy()*255).astype(np.uint8)
+        #---
+        batch_size  = len(infor)
+        truth_label = truth_label.data.cpu().numpy().astype(np.uint8)
+        truth_mask  = truth_mask.data.cpu().numpy().astype(np.uint8)
+        probability_mask = (probability_mask.data.cpu().numpy()*255).astype(np.uint8)
+        probability_label = (probability_label.data.cpu().numpy()*255).astype(np.uint8)
 
-            test_id.extend([i.image_id for i in infor])
-            test_truth_label.append(truth_label)
-            test_truth_mask.append(truth_mask)
-            test_probability_label.append(probability_label)
-            test_probability_mask.append(probability_mask)
-            test_num += batch_size
+        test_id.extend([i.image_id for i in infor])
+        test_truth_label.append(truth_label)
+        test_truth_mask.append(truth_mask)
+        test_probability_label.append(probability_label)
+        test_probability_mask.append(probability_mask)
+        test_num += batch_size
 
 
     assert(test_num == len(test_loader.dataset))
@@ -217,6 +214,20 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
     test_probability_mask = np.concatenate(test_probability_mask)
 
     return test_id, test_truth_label, test_truth_mask, test_probability_label, test_probability_mask
+
+def load(model, pretrain_file, skip=[]):
+    pretrain_state_dict = torch.load(pretrain_file)
+    state_dict = model.state_dict()
+    keys = list(state_dict.keys())
+    for key in keys:
+        if any(s in key for s in skip): continue
+        try:
+            state_dict[key] = pretrain_state_dict[key]
+        except:
+            print(key)
+    model.load_state_dict(state_dict)
+    
+    return model
 
 
 ######################################################################################
@@ -310,30 +321,50 @@ def run_submit_segmentation(model_name,
     #
 
     #---
-    threshold_label      = [ 0.70, 0.70, 0.70, 0.70,]
-    threshold_mask_pixel = [ 0.30, 0.30, 0.30, 0.30,]
+    threshold_label      = [ 0.80, 0.80, 0.80, 0.80,]
+    threshold_mask_pixel = [ 0.40, 0.40, 0.40, 0.40,]
     threshold_mask_size  = [   1,   1,   1,   1,]
     
     ############################################################################## define unet model with backbone
     MASK_WIDTH = 525
     MASK_HEIGHT = 350
+    
+    def get_model(model_name="deep_se101", in_channel=6, num_classes=1, criterion=SoftDiceLoss_binary()):
+        if model_name == 'deep_se50':
+            from semantic_segmentation.network.deepv3 import DeepSRNX50V3PlusD_m1  # r
+            model = DeepSRNX50V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'deep_se101':
+            from semantic_segmentation.network.deepv3 import DeepSRNX101V3PlusD_m1  # r
+            model = DeepSRNX101V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'WideResnet38':
+            from semantic_segmentation.network.deepv3 import DeepWR38V3PlusD_m1  # r
+            model = DeepWR38V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'unet_ef3':
+            from ef_unet import EfficientNet_3_unet
+            model = EfficientNet_3_unet()
+        elif model_name == 'unet_ef5':
+            from ef_unet import EfficientNet_5_unet
+            model = EfficientNet_5_unet()
+        else:
+            print('No model name in it')
+            model = None
+        return model
 
 
     if is_save: #save
         ## net ----------------------------------------
         log.write('** net setting **\n')
 
-        model = Net(model_name, len(CLASSNAME_TO_CLASSNO))
-        state_dict = torch.load(initial_checkpoint, map_location=lambda storage, loc: storage)
-        model.load_state_dict(state_dict, strict=True)
-        model = model.cuda()  
+        model = get_model(model_name=model_name, in_channel=3, num_classes=len(CLASSNAME_TO_CLASSNO), criterion=SoftDiceLoss_binary())
+        model = load(model, initial_checkpoint)
+        model = model.cuda()     
 
         log.write('\tinitial_checkpoint = %s\n' % initial_checkpoint)
         log.write('\n')
 
 
         image_id, truth_label, truth_mask, probability_label, probability_mask,  =\
-            do_evaluate_segmentation(model, test_dataset, batch_size, augment)
+            do_evaluate_segmentation(model, test_dataset, batchsize, augment)
 
         write_list_to_file (out_dir + '/submit/%s/image_id.txt'%(mode_folder),image_id)
         np.savez_compressed(out_dir + '/submit/%s/probability_label.uint8.npz'%(mode_folder), probability_label)

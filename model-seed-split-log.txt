@@ -14,11 +14,16 @@ model: aspp + efficientnet-b4
 seed: 42
 split: frog
 
+not good
+model: aspp + efficientnet-b5
+seed: 42
+split: frog
+
 model: unet + efficientnet-b7
 seed: 1996
 split: 5 fold
 
-ongoing
+ongoing, only 3 folds
 model:　unet + seresnext101
 seed: 2019
 split: 5 fold
@@ -28,7 +33,12 @@ model: unet + efficientnet-b5
 seed: 42
 split: frog
 
-
+ongoing, only 2 folds
 model: deeplabv3+ + seresnext101
+seed: 2020
+split: 5 fold
+
+ongoing, only 1 fold
+model: deeplabv3+ + seresnext50
 seed: 2020
 split: 5 fold

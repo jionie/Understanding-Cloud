@@ -46,23 +46,22 @@ from apex import amp
 import albumentations
 from albumentations import torch as AT
 
-from utils.transform import *
-from utils.dataset import *
-from torch.utils.tensorboard import SummaryWriter
-from utils.ranger import *
-import utils.learning_schedules_fastai as lsf
-from utils.fastai_optim import OptimWrapper
-from utils.lrs_scheduler import * 
-from utils.other_loss import *
-from utils.lovasz_loss import *
-from utils.loss_function import *
-from utils.metric import *
-
-from model import *
+from tuils.dataset import *
+from tuils.ranger import *
+import tuils.learning_schedules_fastai as lsf
+from tuils.fastai_optim import OptimWrapper
+from tuils.lrs_scheduler import * 
+from tuils.other_loss import *
+from tuils.lovasz_loss import *
+from tuils.loss_function import *
+from tuils.metric import *
+from tuils.split_data import *
+from tuils.ml_stratifiers import MultilabelStratifiedKFold
 
 
 ############################################################################## define constant
-SEED = 42
+SEED = 323
+N_SPLITS = 5
 NUM_TRAIN = 5546
 NUM_TEST  = 3698
 
@@ -96,8 +95,8 @@ DATA_DIR = '/media/jionie/my_disk/Kaggle/Cloud/input/understanding_cloud_organiz
 
 ############################################################################## define augument
 parser = argparse.ArgumentParser(description="arg parser")
-parser.add_argument('--model_name', type=str, default='efficientnet-b4', required=False, help='specify the backbone model')
-parser.add_argument('--model_type', type=str, default='aspp', required=False, help='specify the segmentation model, deeplab, unet or fpn')
+parser.add_argument('--model_name', type=str, default='deep_se50', required=False, help='specify the backbone model')
+parser.add_argument('--model_type', type=str, default='deeplab', required=False, help='specify the segmentation model, deeplab, unet or fpn')
 parser.add_argument('--mode', type=str, default='test', required=False, help='specify the mode, valid or test')
 parser.add_argument("--is_save", action='store_true', default=True, help="whether to save predicted result as npy")
 parser.add_argument("--batch_size", type=int, default=16, required=False, help="specify the batch size for dataloader")
@@ -107,8 +106,6 @@ parser.add_argument("--checkpoint_folder", type=str, default="/media/jionie/my_d
     required=False, help="specify the folder for checkpoint")
 parser.add_argument("--result_folder", type=str, default="/media/jionie/my_disk/Kaggle/Cloud/result", \
     required=False, help="specify the folder for result")
-parser.add_argument("--train_split", type=list, default=['by_random1/valid_fold_a0_300.npy',], \
-    required=False, help="specify the validation set for validation")
 parser.add_argument("--augment", type=list, default=['null', 'flip_lr', 'flip_ud', 'flip_both'], \
     required=False, help="specify the augment for tta")
 
@@ -143,19 +140,17 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
     test_probability_mask  = [] # 8bit
     test_truth_label = [] # 8bit
     test_truth_mask  = [] # 8bit
-    
-    with torch.no_grad():
-                    
-        torch.cuda.empty_cache()
-        net.eval()
 
-        for batch_i, (input, truth_label, truth_mask, infor) in enumerate(test_loader):
-            
-            if (batch_i % 10 == 0):
-                print("processing", batch_i, "batch of", len(test_loader), "batches")
+    for batch_i, (input, truth_label, truth_mask, infor) in enumerate(test_loader):
+        
+        if (batch_i % 10 == 0):
+            print("processing", batch_i, "batch of", len(test_loader), "batches")
 
-            batch_size, C , H, W = input.shape
-            input = input.cuda()
+        batch_size, C , H, W = input.shape
+        input = input.cuda()
+
+        with torch.no_grad():
+            net.eval()
 
             num_augment = 0
             if 1: #  null
@@ -194,19 +189,19 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
             probability_mask  = probability_mask/num_augment
             probability_label = probability_label/num_augment
 
-            #---
-            batch_size  = len(infor)
-            truth_label = truth_label.data.cpu().numpy().astype(np.uint8)
-            truth_mask  = truth_mask.data.cpu().numpy().astype(np.uint8)
-            probability_mask = (probability_mask.data.cpu().numpy()*255).astype(np.uint8)
-            probability_label = (probability_label.data.cpu().numpy()*255).astype(np.uint8)
+        #---
+        batch_size  = len(infor)
+        truth_label = truth_label.data.cpu().numpy().astype(np.uint8)
+        truth_mask  = truth_mask.data.cpu().numpy().astype(np.uint8)
+        probability_mask = (probability_mask.data.cpu().numpy()*255).astype(np.uint8)
+        probability_label = (probability_label.data.cpu().numpy()*255).astype(np.uint8)
 
-            test_id.extend([i.image_id for i in infor])
-            test_truth_label.append(truth_label)
-            test_truth_mask.append(truth_mask)
-            test_probability_label.append(probability_label)
-            test_probability_mask.append(probability_mask)
-            test_num += batch_size
+        test_id.extend([i.image_id for i in infor])
+        test_truth_label.append(truth_label)
+        test_truth_mask.append(truth_mask)
+        test_probability_label.append(probability_label)
+        test_probability_mask.append(probability_mask)
+        test_num += batch_size
 
 
     assert(test_num == len(test_loader.dataset))
@@ -219,6 +214,21 @@ def do_evaluate_segmentation(net, test_dataset, batchsize, augment=[], out_dir=N
     return test_id, test_truth_label, test_truth_mask, test_probability_label, test_probability_mask
 
 
+def load(model, pretrain_file, skip=[]):
+    pretrain_state_dict = torch.load(pretrain_file)
+    state_dict = model.state_dict()
+    keys = list(state_dict.keys())
+    for key in keys:
+        if any(s in key for s in skip): continue
+        try:
+            state_dict[key] = pretrain_state_dict[key]
+        except:
+            print(key)
+    model.load_state_dict(state_dict)
+    
+    return model
+
+
 ######################################################################################
 def run_submit_segmentation(model_name,
                             model_type,
@@ -229,12 +239,14 @@ def run_submit_segmentation(model_name,
                             result_folder,
                             checkpoint_folder,
                             train_split=['by_random1/valid_fold_a0_300.npy',],
+                            fold=0,
                             augment=['null', 'flip_lr', 'flip_ud']):
 
     out_dir = \
         result_folder + '/' + model_type + '/' + model_name + '/' + mode + '/'
     initial_checkpoint = \
-        checkpoint_folder + '/' + model_type + '/' + model_name + '/' + model_name + '_' + model_type + '_checkpoint.pth'
+        checkpoint_folder + '/' + model_type + '/' + model_name + '/' + model_name \
+            + '_' + model_type + '_fold_' + str(fold) + '_checkpoint.pth'
 
 
     ###############################################################
@@ -317,15 +329,35 @@ def run_submit_segmentation(model_name,
     ############################################################################## define unet model with backbone
     MASK_WIDTH = 525
     MASK_HEIGHT = 350
+    
+    def get_model(model_name="deep_se101", in_channel=6, num_classes=1, criterion=SoftDiceLoss_binary()):
+        if model_name == 'deep_se50':
+            from semantic_segmentation.network.deepv3 import DeepSRNX50V3PlusD_m1  # r
+            model = DeepSRNX50V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'deep_se101':
+            from semantic_segmentation.network.deepv3 import DeepSRNX101V3PlusD_m1  # r
+            model = DeepSRNX101V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'WideResnet38':
+            from semantic_segmentation.network.deepv3 import DeepWR38V3PlusD_m1  # r
+            model = DeepWR38V3PlusD_m1(in_channel=in_channel, num_classes=num_classes, criterion=SoftDiceLoss_binary())
+        elif model_name == 'unet_ef3':
+            from ef_unet import EfficientNet_3_unet
+            model = EfficientNet_3_unet()
+        elif model_name == 'unet_ef5':
+            from ef_unet import EfficientNet_5_unet
+            model = EfficientNet_5_unet()
+        else:
+            print('No model name in it')
+            model = None
+        return model
 
 
     if is_save: #save
         ## net ----------------------------------------
         log.write('** net setting **\n')
-
-        model = Net(model_name, len(CLASSNAME_TO_CLASSNO))
-        state_dict = torch.load(initial_checkpoint, map_location=lambda storage, loc: storage)
-        model.load_state_dict(state_dict, strict=True)
+        
+        model = get_model(model_name=model_name, in_channel=3, num_classes=len(CLASSNAME_TO_CLASSNO), criterion=SoftDiceLoss_binary())
+        model = load(model, initial_checkpoint)
         model = model.cuda()  
 
         log.write('\tinitial_checkpoint = %s\n' % initial_checkpoint)
@@ -335,20 +367,20 @@ def run_submit_segmentation(model_name,
         image_id, truth_label, truth_mask, probability_label, probability_mask,  =\
             do_evaluate_segmentation(model, test_dataset, batch_size, augment)
 
-        write_list_to_file (out_dir + '/submit/%s/image_id.txt'%(mode_folder),image_id)
-        np.savez_compressed(out_dir + '/submit/%s/probability_label.uint8.npz'%(mode_folder), probability_label)
-        np.savez_compressed(out_dir + '/submit/%s/probability_mask.uint8.npz'%(mode_folder), probability_mask)
+        write_list_to_file (out_dir + '/submit/%s/image_id_%s.txt'%(mode_folder, str(fold)),image_id)
+        np.savez_compressed(out_dir + '/submit/%s/probability_label_%s.uint8.npz'%(mode_folder, str(fold)), probability_label)
+        np.savez_compressed(out_dir + '/submit/%s/probability_mask_%s.uint8.npz'%(mode_folder, str(fold)), probability_mask)
         if mode == 'valid':
-            np.savez_compressed(out_dir + '/submit/%s/truth_label.uint8.npz'%(mode_folder), truth_label)
-            np.savez_compressed(out_dir + '/submit/%s/truth_mask.uint8.npz'%(mode_folder), truth_mask)
+            np.savez_compressed(out_dir + '/submit/%s/truth_label_%s.uint8.npz'%(mode_folder, str(fold)), truth_label)
+            np.savez_compressed(out_dir + '/submit/%s/truth_mask_%s.uint8.npz'%(mode_folder, str(fold)), truth_mask)
 
     else:
-        image_id = read_list_from_file(out_dir + '/submit/%s/image_id.txt'%(mode_folder))
-        probability_label = np.load(out_dir + '/submit/%s/probability_label.uint8.npz'%(mode_folder))['arr_0']
-        probability_mask  = np.load(out_dir + '/submit/%s/probability_mask.uint8.npz'%(mode_folder))['arr_0']
+        image_id = read_list_from_file(out_dir + '/submit/%s/image_id_%s.txt'%(mode_folder, str(fold)))
+        probability_label = np.load(out_dir + '/submit/%s/probability_label_%s.uint8.npz'%(mode_folder, str(fold)))['arr_0']
+        probability_mask  = np.load(out_dir + '/submit/%s/probability_mask_%s.uint8.npz'%(mode_folder, str(fold)))['arr_0']
         if mode == 'valid':
-            truth_label = np.load(out_dir + '/submit/%s/truth_label.uint8.npz'%(mode_folder))['arr_0']
-            truth_mask  = np.load(out_dir + '/submit/%s/truth_mask.uint8.npz'%(mode_folder))['arr_0']
+            truth_label = np.load(out_dir + '/submit/%s/truth_label_%s.uint8.npz'%(mode_folder, str(fold)))['arr_0']
+            truth_mask  = np.load(out_dir + '/submit/%s/truth_mask_%s.uint8.npz'%(mode_folder, str(fold)))['arr_0']
 
     num_test= len(image_id)
     # if 0: #show
@@ -424,7 +456,7 @@ def run_submit_segmentation(model_name,
 
     if mode =='test':
         log.write('test submission .... @ %s\n'%str(augment))
-        file_name = model_type + '_' + model_name + '.csv'
+        file_name = model_type + '_' + model_name + '_fold_' + str(fold) + '.csv'
         csv_file = out_dir +'/submit/%s/'%(mode_folder) + file_name
 
         predict_label = probability_label>(np.array(threshold_label)*255).astype(np.uint8).reshape(1,4)
@@ -458,9 +490,9 @@ def run_submit_segmentation(model_name,
 
 
         #--
-        local_result = find_local_threshold(image_id, probability_label, cutoff=[90,0,550,110])
-        threshold_label = [local_result[0][0],local_result[1][0],local_result[2][0],local_result[3][0]]
-        log.write('test threshold_label=%s\n'%str(threshold_label))
+        # local_result = find_local_threshold(image_id, probability_label, cutoff=[90,0,550,110])
+        # threshold_label = [local_result[0][0],local_result[1][0],local_result[2][0],local_result[3][0]]
+        # log.write('test threshold_label=%s\n'%str(threshold_label))
 
         # predict_label = probability_label>(np.array(threshold_label)*255).astype(np.uint8).reshape(1,4)
         # text = do_local_submit(image_id, predict_label,predict_mask=None)
@@ -471,15 +503,22 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    run_submit_segmentation(args.model_name, \
-                            args.model_type,
-                            args.mode,
-                            args.is_save,
-                            args.batch_size,
-                            args.test_data_folder, 
-                            args.result_folder,
-                            args.checkpoint_folder,
-                            args.train_split,
-                            args.augment)
-    
+    for fold_ in range(N_SPLITS):
+        
+        if (fold_ < 2):
+            continue    
+        val_split = ['val_fold_%s_seed_%s.npy'%(fold_, SEED)]
+        
+        run_submit_segmentation(args.model_name, \
+                                args.model_type,
+                                args.mode,
+                                args.is_save,
+                                args.batch_size,
+                                args.test_data_folder, 
+                                args.result_folder,
+                                args.checkpoint_folder,
+                                val_split,
+                                fold_,
+                                args.augment)
+        
    
